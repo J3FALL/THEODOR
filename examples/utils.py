@@ -1,11 +1,25 @@
 import os
 
+import numpy as np
 import pandas as pd
+from sklearn.datasets import load_iris
 
+from fedot.core.models.data import InputData
+from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.model_types_repository import ModelTypesRepository
-from fedot.core.repository.tasks import TaskTypesEnum
+from fedot.core.repository.tasks import Task, TaskTypesEnum
 from fedot.core.utils import ensure_directory_exists, get_split_data_paths, \
     project_root, save_file_to_csv, split_data
+
+
+def create_clustering_examples_from_iris():
+    predictors, response = load_iris(return_X_y=True)
+    np.random.shuffle(predictors)
+    np.random.shuffle(response)
+    data = InputData(features=predictors, target=response, idx=np.arange(0, len(predictors)),
+                     task=Task(TaskTypesEnum.classification),
+                     data_type=DataTypesEnum.table)
+    return data
 
 
 def create_multi_clf_examples_from_excel(file_path: str, return_df: bool = False):

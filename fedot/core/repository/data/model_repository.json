@@ -167,6 +167,9 @@
 	"kmeans": {
 	  "meta": "sklearn_clust"
 	},
+	"dbscan": {
+	  "meta": "sklearn_clust"
+	},
 	"direct_data_model": {
 	  "meta": "data_model"
 	},

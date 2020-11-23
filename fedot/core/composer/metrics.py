@@ -2,7 +2,8 @@ import sys
 from abc import abstractmethod
 
 import numpy as np
-from sklearn.metrics import f1_score, mean_squared_error, roc_auc_score
+from sklearn.metrics import f1_score, mean_squared_error, roc_auc_score, \
+    silhouette_score
 
 from fedot.core.composer.chain import Chain
 from fedot.core.models.data import InputData, OutputData
@@ -29,6 +30,8 @@ class QualityMetric:
     @classmethod
     def get_value(cls, chain: Chain, reference_data: InputData) -> float:
         metric = cls.default_value
+        if not metric:
+            raise ValueError('Default value for metric not found')
         try:
             results = chain.predict(reference_data)
             metric = cls.metric(reference_data, results)
@@ -97,6 +100,15 @@ class RocAucMetric(QualityMetric):
                                     y_true=reference.target,
                                     **additional_params), 3)
         return score
+
+
+class SilhouetteMetric(QualityMetric):
+    default_value = 1
+
+    @staticmethod
+    @from_maximised_metric
+    def metric(reference: InputData, predicted: OutputData) -> float:
+        return silhouette_score(predicted.features, labels=predicted.predict)
 
 
 class StructuralComplexityMetric(Metric):

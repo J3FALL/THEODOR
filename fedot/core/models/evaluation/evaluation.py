@@ -3,7 +3,7 @@ from abc import abstractmethod
 from datetime import timedelta
 from typing import Optional
 
-from sklearn.cluster import KMeans as SklearnKmeans
+from sklearn.cluster import DBSCAN as SklearnDBScan, KMeans as SklearnKmeans
 from sklearn.discriminant_analysis import (LinearDiscriminantAnalysis,
                                            QuadraticDiscriminantAnalysis)
 from sklearn.ensemble import (AdaBoostRegressor,
@@ -24,7 +24,7 @@ from sklearn.svm import LinearSVR as SklearnSVR
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from xgboost import XGBClassifier, XGBRegressor
 
-from fedot.core.log import default_log, Log
+from fedot.core.log import Log, default_log
 from fedot.core.models.data import InputData, OutputData
 from fedot.core.models.evaluation.custom_models.models import CustomSVC
 from fedot.core.models.tuning.hyperparams import params_range_by_model
@@ -118,6 +118,7 @@ class SkLearnEvaluationStrategy(EvaluationStrategy):
         'ridge': SklearnRidgeReg,
         'lasso': SklearnLassoReg,
         'kmeans': SklearnKmeans,
+        'dbscan': SklearnDBScan,
         'svc': CustomSVC,
         'svr': SklearnSVR,
         'sgdr': SklearnSGD,
@@ -241,7 +242,11 @@ class SkLearnClusteringStrategy(SkLearnEvaluationStrategy):
         :param train_data: data used for model training
         :return:
         """
-        sklearn_model = self._sklearn_model_impl(n_clusters=2)
+        try:
+            # TODO auto detect the number of clusters
+            sklearn_model = self._sklearn_model_impl(n_clusters=3)
+        except TypeError as _:
+            sklearn_model = self._sklearn_model_impl()
         sklearn_model = sklearn_model.fit(train_data.features)
         return sklearn_model
 
@@ -252,7 +257,10 @@ class SkLearnClusteringStrategy(SkLearnEvaluationStrategy):
         :param predict_data: data used for prediction
         :return:
         """
-        prediction = trained_model.predict(predict_data.features)
+        try:
+            prediction = trained_model.predict(predict_data.features)
+        except Exception as _:
+            prediction = trained_model.fit_predict(predict_data.features)
         return prediction
 
     def fit_tuned(self, train_data: InputData, iterations: int = 30,
