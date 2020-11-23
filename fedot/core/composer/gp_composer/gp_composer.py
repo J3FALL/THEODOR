@@ -34,7 +34,7 @@ class GPComposer(Composer):
                       metrics: Optional[Callable], optimiser_parameters: GPChainOptimiserParameters = None,
                       is_visualise: bool = False, is_tune: bool = False) -> Chain:
 
-        if data.target:
+        if data.target is not None:
             train_data, test_data = train_test_data_setup(data, 0.8)
         else:
             # if the problem is unsupervised
