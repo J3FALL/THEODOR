@@ -29,15 +29,17 @@ def get_composite_clustering_model(train_data: InputData,
     # the search of the models provided by the framework
     # that can be used as nodes in a chain for the selected task
     models_repo = ModelTypesRepository()
-    available_model_types, _ = models_repo.suitable_model(task_type=task.task_type)
+    available_model_types, _ = models_repo.suitable_model(task_type=task.task_type,
+                                                          forbidden_tags=['ensembler'])
+    secondary_model_types, _ = models_repo.models_with_tag(['ensembler'])
 
     # TODO change to clustering metric
     metric_function = MetricsRepository(). \
         metric_by_id(ClusteringMetricsEnum.silhouette)
 
     composer_requirements = GPComposerRequirements(
-        primary=available_model_types, secondary=available_model_types,
-        max_lead_time=cur_lead_time)
+        primary=available_model_types, secondary=secondary_model_types,
+        max_lead_time=cur_lead_time, max_arity=len(available_model_types), max_depth=1)
 
     # run the search of best suitable model
     chain_evo_composed = GPComposer().compose_chain(data=dataset_to_compose,

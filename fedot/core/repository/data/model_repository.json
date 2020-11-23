@@ -62,6 +62,16 @@
 	  "tags": ["without_preprocessing", "data_model"],
 	  "description": "Implementations of the models for the feature preprocessing (dimensionality reduction, etc)"
 	},
+	"ensembler": {
+	  "tasks": "[TaskTypesEnum.clustering]",
+	  "input_type": "[DataTypesEnum.table]",
+	  "output_type": "[DataTypesEnum.table]",
+	  "strategies": ["fedot.core.models.evaluation.ensembling", "EnsemblingStrategy"],
+	  "accepted_node_types": ["secondary"],
+	  "forbidden_node_types": "[]",
+	  "tags": ["without_preprocessing", "ensembler"],
+	  "description": "Implementations of the models for the the static ensembling of several models"
+	},
 	"keras_forecasting": {
 	  "tasks": "[TaskTypesEnum.ts_forecasting]",
 	  "input_type": "[DataTypesEnum.ts_lagged_table]",
@@ -170,6 +180,9 @@
 	"dbscan": {
 	  "meta": "sklearn_clust"
 	},
+	"aglo_clust": {
+	  "meta": "sklearn_clust"
+	},
 	"direct_data_model": {
 	  "meta": "data_model"
 	},
@@ -188,6 +201,14 @@
 	"lstm": {
 	  "meta": "keras_forecasting",
 	  "tags": ["deep"]
+	},
+	"equal_ensembler": {
+	  "meta": "ensembler",
+	  "tags": ["linear"]
+	},
+	"voting_ensembler": {
+	  "meta": "ensembler",
+	  "tags": ["linear"]
 	}
   }
 }
