@@ -11,6 +11,11 @@ from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 from test.models.test_model import classification_dataset_with_redunant_features
 
+from numpy import random as np_random
+import random
+
+random.seed(42)
+np_random.seed(42)
 
 def chain_simple() -> Chain:
     node_first = PrimaryNode('svc')

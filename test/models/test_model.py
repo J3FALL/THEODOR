@@ -143,7 +143,7 @@ def test_log_clustering_fit_correct(data_fixture, request):
 
     _, train_predicted = kmeans.fit(data=train_data)
 
-    assert all(np.unique(train_predicted) == [0, 1])
+    assert all(np.unique(train_predicted) == [0, 1, 2])
 
 
 @pytest.mark.parametrize('data_fixture', ['classification_dataset'])
