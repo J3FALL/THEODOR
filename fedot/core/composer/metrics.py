@@ -108,7 +108,7 @@ class SilhouetteMetric(QualityMetric):
     @staticmethod
     @from_maximised_metric
     def metric(reference: InputData, predicted: OutputData) -> float:
-        return silhouette_score(predicted.features, labels=predicted.predict)
+        return silhouette_score(reference.features, labels=predicted.predict)
 
 
 class StructuralComplexityMetric(Metric):

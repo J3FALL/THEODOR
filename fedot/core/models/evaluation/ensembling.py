@@ -7,10 +7,14 @@ from fedot.core.models.data import InputData
 from fedot.core.models.evaluation.evaluation import EvaluationStrategy
 
 
-def select_major(model, data: InputData):
+def _most_frequent(data):
+    return max(set(data), key=list(data).count)
+
+
+def select_major(_, data: InputData):
     final_prediction = copy(data.features[:, 0])
     for item_ind in range(data.features.shape[0]):
-        final_prediction[item_ind] = np.argmax(np.bincount(data.features[item_ind, :]))
+        final_prediction[item_ind] = _most_frequent(data.features[item_ind, :])
     return final_prediction
 
 
