@@ -166,6 +166,9 @@ class Node(ABC):
         model = f'{self.model}'
         return model
 
+    def __repr__(self):
+        return self.__str__()
+
     @property
     def ordered_subnodes_hierarchy(self) -> List['Node']:
         nodes = [self]

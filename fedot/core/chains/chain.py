@@ -192,6 +192,54 @@ class Chain:
         for subtree_node in node.ordered_subnodes_hierarchy:
             self.nodes.remove(subtree_node)
 
+    def delete_node_new(self, node: Node):
+        """ This function DOES NOT work for the case like this:
+        PNode    PNode
+            \  /
+            SNode <- delete this
+            / \
+        SNode   SNode
+
+        ONLY for:
+
+        PNode    PNode
+            \  /
+            SNode <- delete this
+             |
+            SNode
+        """
+
+        def make_secondary_node_as_primary(node_child):
+            extracted_type = node_child.model.model_type
+            new_primary_node = PrimaryNode(extracted_type)
+            this_node_children = self.node_childs(node_child)
+            for node in this_node_children:
+                index = node.nodes_from.index(node_child)
+                node.nodes_from.remove(node_child)
+                node.nodes_from.insert(index, new_primary_node)
+
+        node_children_cached = self.node_childs(node)
+        self_root_node_cached = self.root_node
+
+        if isinstance(node, SecondaryNode) and len(node.nodes_from) > 1 \
+                and len(node_children_cached) > 1:
+            raise ValueError('Can not delete this node')
+
+        for node_child in self.node_childs(node):
+            node_child.nodes_from.remove(node)
+
+        if isinstance(node, SecondaryNode):
+            for node_from in node.nodes_from:
+                node_children_cached[0].nodes_from.append(node_from)
+        elif isinstance(node, PrimaryNode):
+            for node_child in node_children_cached:
+                if not node_child.nodes_from:
+                    make_secondary_node_as_primary(node_child)
+        else:
+            raise ValueError('Node should be Secondary or Primary, but not found')
+        self.nodes.clear()
+        self.add_node(self_root_node_cached)
+
     def _clean_model_cache(self):
         for node in self.nodes:
             node.cache = FittedModelCache(node)
@@ -234,6 +282,17 @@ class Chain:
 
     def __eq__(self, other) -> bool:
         return self.root_node.descriptive_id == other.root_node.descriptive_id
+
+    def __str__(self):
+        description = {
+            'depth': self.depth,
+            'length': self.length,
+            'nodes': self.nodes,
+        }
+        return f'{description}'
+
+    def __repr__(self):
+        return self.__str__()
 
     @property
     def root_node(self) -> Optional[Node]:
