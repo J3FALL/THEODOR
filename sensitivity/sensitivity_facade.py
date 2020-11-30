@@ -1,36 +1,42 @@
 from copy import deepcopy
+from datetime import timedelta
+from typing import Optional, List
 
 from fedot.core.composer.chain import Chain
 from fedot.core.composer.chain_tune import Tune
 from fedot.core.models.data import InputData
-from sklearn.metrics import roc_auc_score as roc_auc
-from datetime import timedelta
-from fedot.core.composer.metrics import RocAucMetric
+from fedot.utilities.define_metric_by_task import MetricByTask
 
 
 class NodeAnalysis:
-    def __init__(self):
-        self._node_delition_analyze = NodeDeletionAnalyze
-        self._model_hparams_analyze = NodeTuneAnalyze
+    def __init__(self, approaches: Optional[List['NodeAnalyzeApproach']] = None):
+        if approaches:
+            self._node_deletion_analyze = [approach for approach in approaches
+                                           if isinstance(approach, NodeDeletionAnalyze)][0]
+            self._model_hparams_analyze = [approach for approach in approaches
+                                           if isinstance(approach, NodeTuneAnalyze)][0]
+        else:
+            self._node_deletion_analyze = NodeDeletionAnalyze
+            self._model_hparams_analyze = NodeTuneAnalyze
 
     def analyze(self, chain: Chain, node_id: int,
                 train_data: InputData, test_data: InputData):
-        deletion_result = self._node_delition_analyze(chain=chain,
+        deletion_result = self._node_deletion_analyze(chain=chain,
                                                       train_data=train_data,
                                                       test_data=test_data).analyze(node_id=node_id)
 
         hparams_result = self._model_hparams_analyze(chain=chain,
                                                      train_data=train_data,
                                                      test_data=test_data).analyze(node_id=node_id)
-        result = self._create_analysis_result(deletion_result, hparams_result)
+        result = self._analysis_result(deletion_result, hparams_result)
 
         return result
 
-    def _create_analysis_result(self, *args):
+    def _analysis_result(self, *args):
         del_result, hp_result = args
         result = {
-            'deleted': del_result,
-            'tuned': hp_result,
+            f'{str(self._node_deletion_analyze.__name__)}': del_result,
+            f'{str(self._model_hparams_analyze.__name__)}': hp_result,
         }
         return result
 
@@ -51,15 +57,17 @@ class NodeAnalyzeApproach:
         pass
 
     def compare_with_origin(self, changed_chain: Chain):
+        metric_by_task = MetricByTask(self._train_data.task.task_type)
+
         changed_chain.fit(input_data=self._train_data, use_cache=False)
         predicted = changed_chain.predict(input_data=self._test_data)
-        changed_chain_roc_auc = roc_auc(y_true=self._test_data.target,
-                                       y_score=predicted.predict)
+        changed_chain_roc_auc = metric_by_task.get_value(self._test_data,
+                                                         predicted)
 
         self._chain.fit(self._train_data)
         predicted_originally = self._chain.predict(self._test_data)
-        original_roc_auc = roc_auc(y_true=self._test_data.target,
-                                   y_score=predicted_originally.predict)
+        original_roc_auc = metric_by_task.get_value(self._test_data,
+                                                    predicted_originally)
 
         return changed_chain_roc_auc - original_roc_auc
 
