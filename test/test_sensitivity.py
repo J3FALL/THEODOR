@@ -1,8 +1,8 @@
 from cases.data.data_utils import get_scoring_case_data_paths
+from fedot.core.composer.node import SecondaryNode
 from fedot.core.models.data import InputData
 from sensitivity.chain_sensitivity import ChainStructureAnalyze
-from sensitivity.sensitivity_facade import NodeDeletionAnalyze, NodeAnalysis, NodeTuneAnalyze
-
+from sensitivity.sensitivity_facade import NodeDeletionAnalyze, NodeAnalysis, NodeTuneAnalyze, NodeReplaceModelAnalyze
 from test.test_chain_import_export import create_four_depth_chain
 
 
@@ -73,3 +73,20 @@ def test_node_tune_analyze():
                                            test_data=test_data).analyze(node_id=node_index)
     # then
     assert isinstance(node_analysis_result, float)
+
+
+def test_node_replacement_analyze():
+    # given
+    chain, train_data, test_data, node_index = given_data()
+
+    replacing_node = SecondaryNode('lda')
+
+    # when
+    node_analysis_result = \
+        NodeReplaceModelAnalyze(chain=chain,
+                                train_data=train_data,
+                                test_data=test_data). \
+            analyze(node_id=node_index,
+                    nodes_to_replace_to=[replacing_node])
+
+    assert isinstance(node_analysis_result, list)

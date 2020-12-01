@@ -13,18 +13,10 @@ class MetricByTask:
     def __init__(self, task_type):
         self._metric = self.__metric_by_task.get(task_type)
 
-    def get_value(self, true: InputData, predicted: OutputData):
+    def get_value(self, true: InputData, predicted: OutputData, round_up_to: int = 6):
         """Returns the value of metric defined by task"""
         try:
-            return self._metric(reference=true, predicted=predicted)
-        # TODO or raise ValueError?
-        except ValueError:
-            return None
-
-    def get_round_value(self, true: InputData, predicted: OutputData):
-        """Returns the value of metric defined by task but round up to 3 signs"""
-        try:
-            return round(self.get_value(true, predicted), 3)
+            return round(self._metric(reference=true, predicted=predicted), round_up_to)
         # TODO or raise ValueError?
         except ValueError:
             return None

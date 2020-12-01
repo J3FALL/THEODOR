@@ -180,6 +180,11 @@ class Chain:
         self.sort_nodes()
 
     def update_node(self, old_node: Node, new_node: Node):
+        if isinstance(old_node, SecondaryNode) and isinstance(new_node, PrimaryNode) or \
+                isinstance(old_node, PrimaryNode) and isinstance(new_node, SecondaryNode):
+            raise ValueError(f"Can't update {old_node.__class__.__name__} "
+                             f"with {new_node.__class__.__name__}")
+
         self._actualise_old_node_childs(old_node, new_node)
         new_node.nodes_from = old_node.nodes_from
         self.nodes.remove(old_node)

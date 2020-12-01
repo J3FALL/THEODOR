@@ -268,3 +268,17 @@ def test_cahin_repr():
     expected_chain_description = "{'depth': 2, 'length': 4, 'nodes': [xgboost, logit, lda, knn]}"
 
     assert repr(chain) == expected_chain_description
+
+
+def test_update_node_in_chain_raise_exception():
+    first = PrimaryNode(model_type='logit')
+    final = SecondaryNode(model_type='xgboost', nodes_from=[first])
+
+    chain = Chain()
+    chain.add_node(final)
+    replacing_node = SecondaryNode('logit')
+
+    with pytest.raises(ValueError) as exc:
+        chain.update_node(old_node=first, new_node=replacing_node)
+
+    assert str(exc.value) == "Can't update PrimaryNode with SecondaryNode"
