@@ -75,7 +75,7 @@ def test_node_tune_analyze():
     assert isinstance(node_analysis_result, float)
 
 
-def test_node_replacement_analyze():
+def test_node_replacement_analyze_defined_nodes():
     # given
     chain, train_data, test_data, node_index = given_data()
 
@@ -89,4 +89,21 @@ def test_node_replacement_analyze():
             analyze(node_id=node_index,
                     nodes_to_replace_to=[replacing_node])
 
+    # then
     assert isinstance(node_analysis_result, list)
+
+
+def test_node_replacement_analyze_random_nodes_default_number():
+    # given
+    chain, train_data, test_data, node_index = given_data()
+
+    # when
+    node_analysis_result = \
+        NodeReplaceModelAnalyze(chain=chain,
+                                train_data=train_data,
+                                test_data=test_data). \
+            analyze(node_id=node_index)
+
+    # then
+    assert isinstance(node_analysis_result, list)
+    assert len(node_analysis_result) == 3

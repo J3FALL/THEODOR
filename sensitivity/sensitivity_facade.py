@@ -1,12 +1,14 @@
 from copy import deepcopy
 from datetime import timedelta
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Type
 
 from fedot.core.composer.chain import Chain
 from fedot.core.composer.chain_tune import Tune
-from fedot.core.composer.node import Node
+from fedot.core.composer.node import Node, PrimaryNode, SecondaryNode
 from fedot.core.models.data import InputData
+from fedot.core.repository.model_types_repository import ModelTypesRepository
 from fedot.utilities.define_metric_by_task import MetricByTask
+import random
 
 
 class NodeAnalysis:
@@ -57,9 +59,9 @@ class NodeAnalyzeApproach:
         """Changes the chain according to the approach"""
         pass
 
-    def compare_with_origin_by_metric(self, changed_chain: Chain,
-                                      original_metric: Optional[float] = None,
-                                      metric_by_task: Optional[MetricByTask] = None):
+    def _compare_with_origin_by_metric(self, changed_chain: Chain,
+                                       original_metric: Optional[float] = None,
+                                       metric_by_task: Optional[MetricByTask] = None):
         if not metric_by_task:
             metric_by_task = MetricByTask(self._train_data.task.task_type)
 
@@ -85,7 +87,7 @@ class NodeDeletionAnalyze(NodeAnalyzeApproach):
 
     def analyze(self, node_id: int) -> Union[List[float], float]:
         shortend_chain = self.sample(node_id)
-        loss = self.compare_with_origin_by_metric(shortend_chain)
+        loss = self._compare_with_origin_by_metric(shortend_chain)
 
         return loss
 
@@ -106,7 +108,7 @@ class NodeTuneAnalyze(NodeAnalyzeApproach):
                                                                input_data=self._train_data,
                                                                max_lead_time=timedelta(minutes=1),
                                                                iterations=30)
-        loss = self.compare_with_origin_by_metric(tuned_chain)
+        loss = self._compare_with_origin_by_metric(tuned_chain)
 
         return loss
 
@@ -116,34 +118,58 @@ class NodeReplaceModelAnalyze(NodeAnalyzeApproach):
         super(NodeReplaceModelAnalyze, self).__init__(chain, train_data, test_data)
 
     def analyze(self, node_id: int,
-                nodes_to_replace_to: Optional[List[Node]]) -> Union[List[float], float]:
+                nodes_to_replace_to: Optional[List[Node]] = None,
+                number_of_random_models: Optional[int] = 3) -> Union[List[float], float]:
         metric_by_task = MetricByTask(self._train_data.task.task_type)
 
         samples = self.sample(node_id=node_id,
-                              nodes_to_replace_to=nodes_to_replace_to)
+                              nodes_to_replace_to=nodes_to_replace_to,
+                              number_of_random_models=number_of_random_models)
 
         original_metric = self._get_metric_value(chain=self._chain, metric=metric_by_task)
 
         loss = []
         for sample in samples:
-            loss_per_sample = self.compare_with_origin_by_metric(sample,
-                                                                 metric_by_task=metric_by_task,
-                                                                 original_metric=original_metric)
+            loss_per_sample = self._compare_with_origin_by_metric(sample,
+                                                                  metric_by_task=metric_by_task,
+                                                                  original_metric=original_metric)
             loss.append(loss_per_sample)
 
         return loss
 
-    def sample(self, node_id: int, nodes_to_replace_to: Optional[List[Node]]) -> Union[List[Chain], Chain]:
-        if nodes_to_replace_to:
-            samples = list()
-            for replacing_node in nodes_to_replace_to:
-                sample_chain = deepcopy(self._chain)
-                replaced_node = sample_chain.nodes[node_id]
-                sample_chain.update_node(old_node=replaced_node,
-                                         new_node=replacing_node)
-                samples.append(sample_chain)
+    def sample(self, node_id: int,
+               nodes_to_replace_to: Optional[List[Node]],
+               number_of_random_models: Optional[int]) -> Union[List[Chain], Chain]:
 
-            return samples
-        # TODO Random node generation/choosing
-        else:
-            pass
+        # TODO Refactor according to future different types of Nodes
+        if not nodes_to_replace_to:
+            if isinstance(self._chain.nodes[node_id], PrimaryNode):
+                node_type = PrimaryNode
+            elif isinstance(self._chain.nodes[node_id], SecondaryNode):
+                node_type = SecondaryNode
+            else:
+                raise ValueError('Unsupported type of Node. Expected Primary or Secondary')
+
+            nodes_to_replace_to = self._node_generation(node_type=node_type,
+                                                        number_of_models=number_of_random_models)
+
+        samples = list()
+        for replacing_node in nodes_to_replace_to:
+            sample_chain = deepcopy(self._chain)
+            replaced_node = sample_chain.nodes[node_id]
+            sample_chain.update_node(old_node=replaced_node,
+                                     new_node=replacing_node)
+            samples.append(sample_chain)
+
+        return samples
+
+    def _node_generation(self, node_type: Union[Type[PrimaryNode], Type[SecondaryNode]],
+                         number_of_models: int = 3) -> List[Node]:
+        available_models, _ = ModelTypesRepository().suitable_model(task_type=self._train_data.task.task_type)
+        random_models = random.sample(available_models, number_of_models)
+
+        nodes = []
+        for model in random_models:
+            nodes.append(node_type(model_type=model))
+
+        return nodes
