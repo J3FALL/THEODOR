@@ -1,4 +1,5 @@
 import warnings
+from copy import copy
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
@@ -127,13 +128,19 @@ class OutputData(Data):
     predict: np.array = None
 
 
-def split_train_test(data, split_ratio=0.8, with_shuffle=False):
+def split_train_test(data, split_ratio=0.8, with_shuffle=False, task: Task = None):
     assert 0. <= split_ratio <= 1.
-    if with_shuffle:
-        data_train, data_test = train_test_split(data, test_size=1. - split_ratio, random_state=42)
-    else:
+    if task is not None and task.task_type == TaskTypesEnum.ts_forecasting:
         split_point = int(len(data) * split_ratio)
-        data_train, data_test = data[:split_point], data[split_point:]
+        # move pre-history of time series from train to test sample
+        data_train, data_test = (data[:split_point],
+                                 copy(data[split_point - task.task_params.max_window_size:]))
+    else:
+        if with_shuffle:
+            data_train, data_test = train_test_split(data, test_size=1. - split_ratio, random_state=42)
+        else:
+            split_point = int(len(data) * split_ratio)
+            data_train, data_test = data[:split_point], data[split_point:]
     return data_train, data_test
 
 
@@ -147,14 +154,15 @@ def _convert_dtypes(data_frame: pd.DataFrame):
     return data_frame
 
 
-def train_test_data_setup(data: InputData, split_ratio=0.8, shuffle_flag=False) -> Tuple[InputData, InputData]:
+def train_test_data_setup(data: InputData, split_ratio=0.8,
+                          shuffle_flag=False, task: Task = None) -> Tuple[InputData, InputData]:
     if data.features is not None:
-        train_data_x, test_data_x = split_train_test(data.features, split_ratio, with_shuffle=shuffle_flag)
+        train_data_x, test_data_x = split_train_test(data.features, split_ratio, with_shuffle=shuffle_flag, task=task)
     else:
         train_data_x, test_data_x = None, None
 
-    train_data_y, test_data_y = split_train_test(data.target, split_ratio, with_shuffle=shuffle_flag)
-    train_idx, test_idx = split_train_test(data.idx, split_ratio)
+    train_data_y, test_data_y = split_train_test(data.target, split_ratio, with_shuffle=shuffle_flag, task=task)
+    train_idx, test_idx = split_train_test(data.idx, split_ratio, with_shuffle=shuffle_flag, task=task)
     train_data = InputData(features=train_data_x, target=train_data_y,
                            idx=train_idx, task=data.task, data_type=data.data_type)
     test_data = InputData(features=test_data_x, target=test_data_y, idx=test_idx, task=data.task,

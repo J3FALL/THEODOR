@@ -1,11 +1,13 @@
 import sys
 from abc import abstractmethod
+from copy import copy
 
 import numpy as np
 from sklearn.metrics import f1_score, mean_squared_error, roc_auc_score
 
 from fedot.core.composer.chain import Chain
 from fedot.core.models.data import InputData, OutputData
+from fedot.core.repository.tasks import TaskTypesEnum
 
 
 def from_maximised_metric(metric_func):
@@ -31,7 +33,14 @@ class QualityMetric:
         metric = cls.default_value
         try:
             results = chain.predict(reference_data)
-            metric = cls.metric(reference_data, results)
+
+            if reference_data.task.task_type == TaskTypesEnum.ts_forecasting:
+                new_reference_data = copy(reference_data)
+                new_reference_data.target = new_reference_data.target[~np.isnan(results.predict)]
+                results.predict = results.predict[~np.isnan(results.predict)]
+                metric = cls.metric(new_reference_data, results)
+            else:
+                metric = cls.metric(reference_data, results)
         except Exception as ex:
             print(f'Metric evaluation error: {ex}')
         return metric

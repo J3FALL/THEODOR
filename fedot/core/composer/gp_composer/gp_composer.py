@@ -12,15 +12,15 @@ from fedot.core.composer.chain import Chain, SharedChain
 from fedot.core.composer.composer import Composer, ComposerRequirements
 from fedot.core.composer.node import PrimaryNode, SecondaryNode
 from fedot.core.composer.optimisers.gp_optimiser import GPChainOptimiser, GPChainOptimiserParameters
-from fedot.core.composer.optimisers.param_free_gp_optimiser import GPChainParameterFreeOptimiser
 from fedot.core.composer.optimisers.inheritance import GeneticSchemeTypesEnum
 from fedot.core.composer.optimisers.mutation import MutationStrengthEnum
+from fedot.core.composer.optimisers.param_free_gp_optimiser import GPChainParameterFreeOptimiser
 from fedot.core.composer.visualisation import ComposerVisualiser
 from fedot.core.composer.write_history import write_composer_history_to_csv
 from fedot.core.models.data import InputData, train_test_data_setup
 from fedot.core.repository.model_types_repository import ModelTypesRepository
-from fedot.core.repository.quality_metrics_repository import ClassificationMetricsEnum, RegressionMetricsEnum, \
-    MetricsRepository
+from fedot.core.repository.quality_metrics_repository import ClassificationMetricsEnum, MetricsRepository, \
+    RegressionMetricsEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 
 
@@ -79,7 +79,7 @@ class GPComposer(Composer):
         if not self.optimiser:
             raise AttributeError(f'Optimiser for chain composition is not defined')
 
-        train_data, test_data = train_test_data_setup(data, 0.8)
+        train_data, test_data = train_test_data_setup(data, 0.8, task=data.task)
         self.shared_cache.clear()
         metric_function_for_nodes = partial(self.metric_for_nodes,
                                             self.metrics, train_data, test_data, True)

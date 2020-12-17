@@ -74,12 +74,6 @@ def _is_data_merged(chain: Chain):
     return data_merged_or_merging_not_required
 
 
-def _is_primary_not_composition_datamodel(chain: Chain):
-    is_primary_not_composition_datamodel = all(['composition' not in node.model_tags
-                                                for node in chain.nodes if isinstance(node, PrimaryNode)])
-    return is_primary_not_composition_datamodel
-
-
 def _is_root_not_datamodel(chain: Chain):
     return 'data_model' not in chain.root_node.model_tags and \
            'decomposition' not in chain.root_node.model_tags
@@ -91,7 +85,6 @@ def has_correct_model_positions(chain: Chain, task: Optional[Task] = None):
         is_root_satisfy_task_type = task.task_type in chain.root_node.model.acceptable_task_types
 
     if not _is_root_not_datamodel(chain) or \
-            not _is_primary_not_composition_datamodel(chain) or \
             not _is_data_merged(chain) or \
             not is_root_satisfy_task_type:
         raise ValueError(f'{ERROR_PREFIX} Chain has incorrect models positions')
