@@ -4,6 +4,8 @@ from datetime import timedelta
 from typing import Optional
 
 from sklearn.cluster import DBSCAN as SklearnDBScan, KMeans as SklearnKmeans
+from sklearn.cluster import AgglomerativeClustering as SklearnAgloClust, \
+    DBSCAN as SklearnDBScan, KMeans as SklearnKmeans
 from sklearn.discriminant_analysis import (LinearDiscriminantAnalysis,
                                            QuadraticDiscriminantAnalysis)
 from sklearn.ensemble import (AdaBoostRegressor,
@@ -122,6 +124,7 @@ class SkLearnEvaluationStrategy(EvaluationStrategy):
         'lasso': SklearnLassoReg,
         'kmeans': SklearnKmeans,
         'dbscan': SklearnDBScan,
+        'aglo_clust': SklearnAgloClust,
         'svc': CustomSVC,
         'svr': SklearnSVR,
         'sgdr': SklearnSGD,

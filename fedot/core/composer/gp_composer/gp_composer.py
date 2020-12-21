@@ -78,13 +78,14 @@ class GPComposer(Composer):
 
         if not self.optimiser:
             raise AttributeError(f'Optimiser for chain composition is not defined')
-
         if data.target is not None:
             train_data, test_data = train_test_data_setup(data, 0.8, task=data.task)
         else:
             # if the problem is unsupervised
             train_data, test_data = data, data
+
         self.shared_cache.clear()
+
         metric_function_for_nodes = partial(self.metric_for_nodes,
                                             self.metrics, train_data, test_data, True)
 
