@@ -3,7 +3,7 @@ from typing import Optional
 
 import numpy as np
 
-from fedot.core.models.data import InputData
+from fedot.core.data.data import InputData
 from fedot.core.models.evaluation.evaluation import EvaluationStrategy
 
 

@@ -1,55 +1,35 @@
-import datetime
 import random
 from copy import deepcopy
-from datetime import timedelta
 
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import precision_score as precision
+from sklearn.datasets import make_blobs
+from sklearn.metrics import adjusted_rand_score
 
-from examples.utils import create_clustering_examples_from_iris
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.gp_composer.gp_composer import \
-    GPComposer, GPComposerRequirements
-from fedot.core.composer.node import PrimaryNode
-from fedot.core.composer.visualisation import ComposerVisualiser
-from fedot.core.models.data import InputData
-from fedot.core.repository.model_types_repository import ModelTypesRepository
-from fedot.core.repository.quality_metrics_repository import ClusteringMetricsEnum, MetricsRepository
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode
+from fedot.core.data.data import InputData
+from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 
 random.seed(1)
 np.random.seed(1)
 
 
-def get_composite_clustering_model(train_data: InputData,
-                                   cur_lead_time: datetime.timedelta = timedelta(seconds=5)):
-    task = Task(task_type=TaskTypesEnum.clustering)
-    dataset_to_compose = train_data
+def create_clustering_example():
+    num_features = 2
+    num_clusters = 3
 
-    # the search of the models provided by the framework
-    # that can be used as nodes in a chain for the selected task
-    models_repo = ModelTypesRepository()
+    predictors, response = make_blobs(1000, num_features, centers=num_clusters, random_state=3)
 
-    available_model_types, _ = models_repo.suitable_model(task_type=task.task_type,
-                                                          forbidden_tags=['ensembler'])
-    secondary_model_types, _ = models_repo.models_with_tag(['ensembler'])
+    plt.scatter(predictors[:, 0], predictors[:, 1],
+                c=[list(mcolors.TABLEAU_COLORS)[_] for _ in response])
+    plt.show()
 
-    # TODO change to clustering metric
-    metric_function = MetricsRepository(). \
-        metric_by_id(ClusteringMetricsEnum.silhouette)
-
-    composer_requirements = GPComposerRequirements(
-        primary=available_model_types, secondary=secondary_model_types,
-        max_lead_time=cur_lead_time, max_arity=len(available_model_types), max_depth=1)
-
-    # run the search of best suitable model
-    chain_evo_composed = GPComposer().compose_chain(data=dataset_to_compose,
-                                                    initial_chain=None,
-                                                    composer_requirements=composer_requirements,
-                                                    metrics=metric_function, is_visualise=False)
-    chain_evo_composed.fit(input_data=dataset_to_compose)
-
-    return chain_evo_composed
+    return InputData(features=predictors, target=response, idx=np.arange(0, len(predictors)),
+                     task=Task(TaskTypesEnum.clustering),
+                     data_type=DataTypesEnum.table)
 
 
 def get_atomic_clustering_model(train_data: InputData):
@@ -62,22 +42,26 @@ def get_atomic_clustering_model(train_data: InputData):
 def validate_model_quality(model: Chain, dataset_to_validate: InputData):
     predicted_labels = model.predict(dataset_to_validate).predict
 
-    prec_valid = round(precision(y_true=dataset_to_validate.target,
-                                 y_pred=predicted_labels, average='macro'), 6)
-    return prec_valid
+    prediction_valid = round(adjusted_rand_score(labels_true=dataset_to_validate.target,
+                                                 labels_pred=predicted_labels), 6)
+
+    return prediction_valid, predicted_labels
 
 
 if __name__ == '__main__':
-    data = create_clustering_examples_from_iris()
+    data = create_clustering_example()
     data_train = deepcopy(data)
     data_train.target = None
-    fitted_model = get_composite_clustering_model(data_train)
-    fitted_model_atomic = get_atomic_clustering_model(data_train)
 
-    ComposerVisualiser.visualise(fitted_model)
+    fitted_model = get_atomic_clustering_model(data_train)
+    prediction_basic, _ = validate_model_quality(fitted_model, data)
 
-    prec_composite = validate_model_quality(fitted_model, data)
-    prec_atomic = validate_model_quality(fitted_model_atomic, data)
+    fitted_model.fine_tune_all_nodes(data_train, iterations=30)
 
-    print(f'Precision metric for composite is {prec_composite}')
-    print(f'Precision metric for atomic {prec_atomic}')
+    prediction_tuned, predicted_labels = validate_model_quality(fitted_model, data)
+
+    print(f'adjusted_rand_score for basic model {prediction_basic}')
+    print(f'adjusted_rand_score for tuned model {prediction_tuned}')
+
+    print(f'Real clusters number is {len(set(data.target))}, '
+          f'predicted number is {len(set(predicted_labels))}')

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import load_iris
 
-from fedot.core.models.data import InputData
+from fedot.core.data.data import InputData
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.model_types_repository import ModelTypesRepository
 from fedot.core.repository.tasks import Task, TaskTypesEnum
