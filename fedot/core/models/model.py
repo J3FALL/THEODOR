@@ -124,6 +124,9 @@ class Model:
             fitted_model, tuned_params = self._eval_strategy.fit_tuned(train_data=prepared_data,
                                                                        iterations=iterations,
                                                                        max_lead_time=max_lead_time)
+            if fitted_model is None:
+                raise ValueError(f'{self.model_type} can not be fitted')
+
             self.params = tuned_params
             if not self.params:
                 self.params = DEFAULT_PARAMS_STUB

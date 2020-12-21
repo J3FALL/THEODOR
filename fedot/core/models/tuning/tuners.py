@@ -3,13 +3,12 @@ from datetime import timedelta
 from typing import Callable, Tuple, Union
 
 from numpy.random import choice as nprand_choice, randint
-from sklearn.metrics import make_scorer, mean_squared_error, roc_auc_score
-from sklearn.metrics import mean_squared_error as mse
+from sklearn.metrics import make_scorer, mean_squared_error, mean_squared_error as mse, roc_auc_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, cross_val_score
 from skopt import BayesSearchCV
 
 from fedot.core.composer.timer import TunerTimer
-from fedot.core.log import default_log, Log
+from fedot.core.log import Log, default_log
 from fedot.core.models.data import InputData, train_test_data_setup
 from fedot.core.models.tuning.tuner_adapter import HyperoptAdapter
 from fedot.core.repository.tasks import TaskTypesEnum
@@ -70,7 +69,7 @@ class Tuner:
     def _is_score_better(self, previous, current):
         __compare = {
             TaskTypesEnum.classification: operator.gt,
-            TaskTypesEnum.regression: operator.lt
+            TaskTypesEnum.regression: operator.gt
         }
         comparison = __compare.get(self.tune_data.task.task_type)
         try:
@@ -171,8 +170,8 @@ class SklearnCustomRandomTuner(Tuner):
         try:
             with TunerTimer() as timer:
                 best_model = self.trained_model
-                best_score, best_params = self.get_cross_val_score_and_params(best_model)
-                for iteration in range(self.max_iterations):
+                best_score, best_params = self.default_score, self.default_params
+                for _ in range(self.max_iterations):
                     params = {k: nprand_choice(v) for k, v in self.params_range.items()}
                     self.trained_model.set_params(**params)
                     score, _ = self.get_cross_val_score_and_params(self.trained_model)

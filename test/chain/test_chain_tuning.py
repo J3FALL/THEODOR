@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from random import seed
 
+import numpy as np
 import pytest
 from sklearn.metrics import mean_squared_error as mse, roc_auc_score as roc
 
@@ -13,6 +14,7 @@ from fedot.core.repository.tasks import Task, TaskTypesEnum
 from test.test_chain_import_export import create_four_depth_chain
 
 seed(1)
+np.random.seed(1)
 
 
 @pytest.fixture()
@@ -30,61 +32,50 @@ def classification_dataset():
 
 
 def get_regr_chain():
-    # Chain composition
-    first = PrimaryNode(model_type='xgbreg')
-    second = PrimaryNode(model_type='knnreg')
-    final = SecondaryNode(model_type='linear',
-                          nodes_from=[first, second])
-    chain = Chain()
-    chain.add_node(final)
+    final = PrimaryNode(model_type='xgbreg')
+    chain = Chain(final)
 
     return chain
 
 
 def get_class_chain():
-    # Chain composition
     first = PrimaryNode(model_type='xgboost')
-    second = PrimaryNode(model_type='knn')
-    final = SecondaryNode(model_type='xgboost',
+    second = PrimaryNode(model_type='pca_data_model')
+    final = SecondaryNode(model_type='logit',
                           nodes_from=[first, second])
 
-    chain = Chain()
-    chain.add_node(final)
+    chain = Chain(final)
 
     return chain
 
 
 @pytest.mark.parametrize('data_fixture', ['regression_dataset'])
 def test_fine_tune_primary_nodes(data_fixture, request):
-    # TODO still stochatic
-    result_list = []
-    for _ in range(3):
-        data = request.getfixturevalue(data_fixture)
-        train_data, test_data = train_test_data_setup(data=data)
+    data = request.getfixturevalue(data_fixture)
+    train_data, test_data = train_test_data_setup(data=data)
 
-        # Chain composition
-        chain = get_regr_chain()
+    # Chain composition
+    chain = get_regr_chain()
 
-        # Before tuning prediction
-        chain.fit(train_data, use_cache=False)
-        before_tuning_predicted = chain.predict(test_data)
+    # Before tuning prediction
+    chain.fit(train_data, use_cache=False)
+    before_tuning_predicted = chain.predict(test_data)
 
-        # Chain tuning
-        chain.fine_tune_primary_nodes(train_data, max_lead_time=timedelta(minutes=1), iterations=10)
+    # Chain tuning
+    chain.fine_tune_primary_nodes(train_data, max_lead_time=timedelta(minutes=1), iterations=10)
 
-        # After tuning prediction
-        chain.fit(train_data)
-        after_tuning_predicted = chain.predict(test_data)
+    # After tuning prediction
+    chain.fit_from_scratch(train_data)
+    after_tuning_predicted = chain.predict(test_data)
 
-        # Metrics
-        bfr_tun_mse = mse(y_true=test_data.target, y_pred=before_tuning_predicted.predict)
-        aft_tun_mse = mse(y_true=test_data.target, y_pred=after_tuning_predicted.predict)
+    # Metrics
+    bfr_tun_mse = mse(y_true=test_data.target, y_pred=before_tuning_predicted.predict)
+    aft_tun_mse = mse(y_true=test_data.target, y_pred=after_tuning_predicted.predict)
 
-        print(f'Before tune test {bfr_tun_mse}')
-        print(f'After tune test {aft_tun_mse}', '\n')
-        result_list.append(aft_tun_mse <= bfr_tun_mse)
+    print(f'Before tune test {bfr_tun_mse}')
+    print(f'After tune test {aft_tun_mse}', '\n')
 
-    assert any(result_list)
+    assert aft_tun_mse <= bfr_tun_mse
 
 
 @pytest.mark.parametrize('data_fixture', ['classification_dataset'])
@@ -101,6 +92,7 @@ def test_fine_tune_all_nodes(data_fixture, request):
 
     # root node tuning
     chain.fine_tune_all_nodes(train_data, max_lead_time=timedelta(minutes=1), iterations=30)
+    chain.fit_from_scratch(train_data)
     after_tun_root_node_predicted = chain.predict(test_data)
 
     bfr_tun_roc_auc = round(roc(y_true=test_data.target, y_score=before_tuning_predicted.predict), 2)
@@ -140,7 +132,7 @@ def test_tune_primary_with_tune_class_correctly(data_fixture, request):
                        verbose=True).fine_tune_primary_nodes(input_data=train_data,
                                                              max_lead_time=timedelta(minutes=1),
                                                              iterations=30)
-    tuned_chain.fit(train_data)
+    tuned_chain.fit_from_scratch(train_data)
     after_tun_root_node_predicted = tuned_chain.predict(test_data)
 
     bfr_tun_roc_auc = round(roc(y_true=test_data.target, y_score=before_tuning_predicted.predict), 2)
@@ -165,7 +157,7 @@ def test_tune_all_with_tune_class_correctly(data_fixture, request):
                                                                 max_lead_time=timedelta(minutes=1),
                                                                 iterations=30)
 
-    tuned_chain.fit(train_data)
+    tuned_chain.fit_from_scratch(train_data)
     after_tun_root_node_predicted = tuned_chain.predict(test_data)
 
     bfr_tun_roc_auc = round(roc(y_true=test_data.target, y_score=before_tuning_predicted.predict), 2)
@@ -190,7 +182,7 @@ def test_tune_root_with_tune_class_correctly(data_fixture, request):
                                                                 max_lead_time=timedelta(minutes=1),
                                                                 iterations=30)
 
-    tuned_chain.fit(train_data)
+    tuned_chain.fit_from_scratch(train_data)
     after_tun_root_node_predicted = tuned_chain.predict(test_data)
 
     bfr_tun_roc_auc = round(roc(y_true=test_data.target, y_score=before_tuning_predicted.predict), 2)
@@ -218,7 +210,7 @@ def test_tune_certain_node_with_tune_class_correctly(data_fixture, request):
                                                      max_lead_time=timedelta(minutes=1),
                                                      iterations=30)
 
-    tuned_chain.fit(train_data)
+    tuned_chain.fit_from_scratch(train_data)
     after_tun_root_node_predicted = tuned_chain.predict(test_data)
 
     bfr_tun_roc_auc = round(roc(y_true=test_data.target, y_score=before_tuning_predicted.predict), 1)

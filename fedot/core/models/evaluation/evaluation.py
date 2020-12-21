@@ -24,7 +24,7 @@ from sklearn.svm import LinearSVR as SklearnSVR
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from xgboost import XGBClassifier, XGBRegressor
 
-from fedot.core.log import default_log, Log
+from fedot.core.log import Log, default_log
 from fedot.core.models.data import InputData, OutputData
 from fedot.core.models.evaluation.custom_models.models import CustomSVC
 from fedot.core.models.tuning.hyperparams import params_range_by_model
@@ -74,6 +74,7 @@ class EvaluationStrategy:
         """
         raise NotImplementedError()
 
+    @abstractmethod
     def fit_tuned(self, train_data: InputData, iterations: int,
                   max_lead_time: timedelta = timedelta(minutes=5)):
         """
