@@ -1,7 +1,7 @@
 Node
 ====
 
-.. automodule:: fedot.core.composer.node
+.. automodule:: fedot.core.chains.node
    :members:
    :undoc-members:
    :show-inheritance:

@@ -3,9 +3,9 @@ import pytest
 from statsmodels.tsa.arima_process import ArmaProcess
 
 from fedot.core.algorithms.time_series.prediction import ts_mse
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.models.data import InputData, train_test_data_setup
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.data.data import InputData, train_test_data_setup
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum, TsForecastingParams
 

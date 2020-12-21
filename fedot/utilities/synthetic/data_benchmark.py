@@ -2,8 +2,8 @@ from typing import Dict
 
 import numpy as np
 
-from fedot.core.composer.chain import Chain
-from fedot.core.models.data import InputData
+from fedot.core.chains.chain import Chain
+from fedot.core.data.data import InputData
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 from fedot.utilities.synthetic.chain import separately_fit_chain

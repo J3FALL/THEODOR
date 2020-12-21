@@ -2,25 +2,18 @@ import numpy as np
 from sklearn.datasets import make_regression
 from sklearn.metrics import mean_squared_error as mse
 
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.composer import ComposerRequirements, DummyChainTypeEnum, DummyComposer
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.models.data import InputData, train_test_data_setup
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.data.data import InputData, train_test_data_setup
 from fedot.core.repository.dataset_types import DataTypesEnum
-from fedot.core.repository.quality_metrics_repository import MetricsRepository, RegressionMetricsEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 
 
-def compose_chain(data: InputData) -> Chain:
-    composer_requirements = ComposerRequirements(primary=['lasso', 'ridge'],
-                                                 secondary=['linear'])
-
-    metric_function = MetricsRepository().metric_by_id(RegressionMetricsEnum.RMSE)
-    dummy_composer = DummyComposer(dummy_chain_type=DummyChainTypeEnum.hierarchical, initial_chain=None,
-                                   composer_requirements=composer_requirements,
-                                   metrics=metric_function)
-
-    chain = dummy_composer.compose_chain(data=data, is_visualise=False)
+def generate_chain() -> Chain:
+    node_first = PrimaryNode('lasso')
+    node_second = PrimaryNode('ridge')
+    node_root = SecondaryNode('linear', nodes_from=[node_first, node_second])
+    chain = Chain(node_root)
     return chain
 
 
@@ -46,7 +39,7 @@ def get_rmse_value(chain: Chain, train_data: InputData, test_data: InputData) ->
 def test_regression_chain_fit_correct():
     data = get_synthetic_regression_data()
 
-    chain = compose_chain(data=data)
+    chain = generate_chain()
     train_data, test_data = train_test_data_setup(data)
 
     chain.fit(input_data=train_data)

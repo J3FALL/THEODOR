@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, median_absolute_error
 
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.chains.ts_chain import TsForecastingChain
 from fedot.core.utils import project_root
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.composer.ts_chain import TsForecastingChain
 from fedot.utilities.ts_gapfilling import ModelGapFiller
 
 

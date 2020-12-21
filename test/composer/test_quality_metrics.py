@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 from sklearn.datasets import load_breast_cancer
 
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.models.data import InputData, split_train_test
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.data.data import InputData, split_train_test
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.quality_metrics_repository import \
     (ClassificationMetricsEnum,

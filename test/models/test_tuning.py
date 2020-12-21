@@ -6,9 +6,9 @@ import pytest
 from sklearn.metrics import mean_squared_error as mse, roc_auc_score as roc_auc
 
 from cases.data.data_utils import get_scoring_case_data_paths
-from fedot.core.models.data import InputData, train_test_data_setup
+from fedot.core.data.data import InputData, train_test_data_setup
+from fedot.core.data.preprocessing import Scaling
 from fedot.core.models.model import Model
-from fedot.core.models.preprocessing import Scaling
 from fedot.core.models.tuning.tuners import get_random_params
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 from test.tasks.test_forecasting import get_synthetic_ts_data_period

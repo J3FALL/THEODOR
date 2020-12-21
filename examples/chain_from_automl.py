@@ -3,9 +3,9 @@ from datetime import timedelta
 from sklearn.metrics import roc_auc_score as roc_auc
 
 from cases.data.data_utils import get_scoring_case_data_paths
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.models.data import InputData
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.data.data import InputData
 
 
 def run_chain_from_automl(train_file_path: str, test_file_path: str,

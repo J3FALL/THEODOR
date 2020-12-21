@@ -12,7 +12,7 @@ import pandas as pd
 from PIL import Image
 from imageio import get_writer, imread
 
-from fedot.core.composer.chain import Chain, as_nx_graph
+from fedot.core.chains.chain import Chain, as_nx_graph
 from fedot.core.utils import default_fedot_data_dir
 
 

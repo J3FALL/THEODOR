@@ -1,12 +1,13 @@
+from copy import deepcopy
+
 import numpy as np
 import pytest
-
 from sklearn.datasets import load_breast_cancer, load_iris
-from copy import deepcopy
-from fedot.core.composer.chain import Chain, SharedChain
-from fedot.core.composer.node import FittedModelCache, \
+
+from fedot.core.chains.chain import Chain, SharedChain
+from fedot.core.chains.node import FittedModelCache, \
     PrimaryNode, SecondaryNode, SharedCache
-from fedot.core.models.data import InputData, split_train_test
+from fedot.core.data.data import InputData, split_train_test
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 

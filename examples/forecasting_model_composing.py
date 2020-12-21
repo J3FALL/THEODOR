@@ -4,12 +4,12 @@ import os
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error as mse
 
-from fedot.core.composer.chain import Chain
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
 from fedot.core.composer.gp_composer.fixed_structure_composer import FixedStructureComposerBuilder
 from fedot.core.composer.gp_composer.gp_composer import GPComposerRequirements
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
 from fedot.core.composer.visualisation import ComposerVisualiser
-from fedot.core.models.data import InputData, OutputData
+from fedot.core.data.data import InputData, OutputData
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.quality_metrics_repository import MetricsRepository, RegressionMetricsEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum, TsForecastingParams

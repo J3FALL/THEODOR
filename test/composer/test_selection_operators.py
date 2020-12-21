@@ -1,8 +1,8 @@
 from functools import partial
 
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.gp_composer.gp_composer import GPComposerRequirements, ChainGenerationParams
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.composer.gp_composer.gp_composer import ChainGenerationParams, GPComposerRequirements
 from fedot.core.composer.optimisers.gp_operators import random_chain
 from fedot.core.composer.optimisers.selection import (
     SelectionTypesEnum,

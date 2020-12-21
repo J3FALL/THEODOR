@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from fedot.core.models.data import InputData, OutputData
+from fedot.core.data.data import InputData, OutputData
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 

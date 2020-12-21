@@ -4,8 +4,8 @@ import networkx as nx
 from networkx.algorithms.cycles import simple_cycles
 from networkx.algorithms.isolate import isolates
 
-from fedot.core.composer.chain import Chain, as_nx_graph
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
+from fedot.core.chains.chain import Chain, as_nx_graph
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
 from fedot.core.repository.tasks import Task
 
 ERROR_PREFIX = 'Invalid chain configuration:'

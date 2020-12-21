@@ -2,7 +2,7 @@ import numpy as np
 from scipy import signal
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-from fedot.core.models.data import InputData
+from fedot.core.data.data import InputData
 
 
 def split_ts_to_components(trained_model, predict_data: InputData):

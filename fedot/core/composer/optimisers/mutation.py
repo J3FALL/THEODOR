@@ -3,9 +3,9 @@ from functools import partial
 from random import choice, randint, random
 from typing import Any
 
-from fedot.core.composer.chain import Chain, List
+from fedot.core.chains.chain import Chain, List
 from fedot.core.composer.constraint import constraint_function
-from fedot.core.composer.optimisers.gp_operators import node_depth, nodes_from_height, random_chain, node_height
+from fedot.core.composer.optimisers.gp_operators import node_depth, node_height, nodes_from_height, random_chain
 from fedot.core.utils import ComparableEnum as Enum
 
 

@@ -6,17 +6,14 @@ from typing import List
 
 import numpy as np
 
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.node import CachedState
-from fedot.core.composer.node import Node
-from fedot.core.composer.node import PrimaryNode, SecondaryNode, FittedModelCache
-from fedot.core.models.model import InputData
-from fedot.core.models.model import Model
-from fedot.core.models.preprocessing import Normalization
-from fedot.core.repository.tasks import Task, TaskTypesEnum
-from fedot.utilities.synthetic.data import classification_dataset as synthetic_dataset
-from fedot.utilities.synthetic.data import gauss_quantiles_dataset as gauss_quantiles
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import CachedState, FittedModelCache, Node, PrimaryNode, SecondaryNode
+from fedot.core.data.preprocessing import Normalization
+from fedot.core.models.model import InputData, Model
 from fedot.core.repository.dataset_types import DataTypesEnum
+from fedot.core.repository.tasks import Task, TaskTypesEnum
+from fedot.utilities.synthetic.data import classification_dataset as synthetic_dataset, \
+    gauss_quantiles_dataset as gauss_quantiles
 
 
 @dataclass

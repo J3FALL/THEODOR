@@ -1,9 +1,10 @@
 import pytest
 
-from fedot.core.chain_validation import (has_correct_model_positions, has_no_cycle, has_no_isolated_components,
-                                         has_no_isolated_nodes, has_no_self_cycled_nodes, has_primary_nodes, validate)
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.chain_validation import (has_correct_model_positions, has_no_cycle, has_no_isolated_components,
+                                                has_no_isolated_nodes, has_no_self_cycled_nodes, has_primary_nodes,
+                                                validate)
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 
 ERROR_PREFIX = 'Invalid chain configuration:'

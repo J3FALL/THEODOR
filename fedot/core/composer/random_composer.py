@@ -5,10 +5,10 @@ from typing import (Any, Callable, List, Optional)
 
 from numpy import random
 
-from fedot.core.composer.chain import Chain, Node
+from fedot.core.chains.chain import Chain, Node
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
 from fedot.core.composer.composer import ComposerRequirements
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.models.data import InputData
+from fedot.core.data.data import InputData
 
 
 class RandomSearchComposer:

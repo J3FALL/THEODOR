@@ -8,14 +8,14 @@ Model
 
 Preprocessing
 -------------
-.. automodule:: fedot.core.models.preprocessing
+.. automodule:: fedot.core.data.preprocessing
    :members:
    :undoc-members:
    :show-inheritance:
 
 Transformation
 --------------
-.. automodule:: fedot.core.models.transformation
+.. automodule:: fedot.core.data.transformation
    :members:
    :undoc-members:
    :show-inheritance:

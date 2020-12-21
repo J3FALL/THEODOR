@@ -5,9 +5,9 @@ import shutil
 import pytest
 
 from cases.data.data_utils import get_scoring_case_data_paths
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.models.data import InputData
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.data.data import InputData
 from fedot.utilities.synthetic.chain_template_new import ChainTemplate, extract_subtree_root
 
 

@@ -4,11 +4,11 @@ from copy import copy
 from datetime import timedelta
 from typing import Callable, List, Optional
 
+from fedot.core.data.data import InputData, OutputData
+from fedot.core.data.preprocessing import preprocessing_func_for_data
+from fedot.core.data.transformation import transformation_function_for_data
 from fedot.core.log import default_log
-from fedot.core.models.data import InputData, OutputData
 from fedot.core.models.model import Model
-from fedot.core.models.preprocessing import preprocessing_func_for_data
-from fedot.core.models.transformation import transformation_function_for_data
 
 CachedState = namedtuple('CachedState', 'preprocessor model')
 
@@ -38,8 +38,6 @@ class Node(ABC):
             self.log = log
 
         self.model = Model(model_type=model_type)
-
-
 
     @property
     def descriptive_id(self):
@@ -121,11 +119,12 @@ class Node(ABC):
 
         return self.output_from_prediction(input_data, model_predict)
 
-    def predict(self, input_data: InputData, verbose=False) -> OutputData:
+    def predict(self, input_data: InputData, output_mode: str = 'default', verbose=False) -> OutputData:
         """
         Run prediction process in the node
 
         :param input_data: data used for prediction
+        :param output_mode: desired output for models (e.g. labels, probs, full_probs)
         :param verbose: flag used for status printing to console, default False
         """
         transformed = self._transform(input_data)
@@ -135,7 +134,7 @@ class Node(ABC):
             raise ValueError('Model must be fitted before predict')
 
         model_predict = self.model.predict(fitted_model=self.cache.actual_cached_state.model,
-                                           data=preprocessed_data)
+                                           data=preprocessed_data, output_mode=output_mode)
 
         return self.output_from_prediction(input_data, model_predict)
 
@@ -248,17 +247,19 @@ class PrimaryNode(Node):
 
         return super().fit(input_data, verbose)
 
-    def predict(self, input_data: InputData, verbose=False) -> OutputData:
+    def predict(self, input_data: InputData,
+                output_mode: str = 'default', verbose=False) -> OutputData:
         """
         Predict using the model located in the primary node
 
         :param input_data: data used for prediction
+        :param output_mode: desired output for models (e.g. labels, probs, full_probs)
         :param verbose: flag used for status printing to console, default False
         """
         if verbose:
             self.log.info(f'Predict in primary node by model: {self.model}')
 
-        return super().predict(input_data, verbose)
+        return super().predict(input_data, output_mode, verbose)
 
 
 class SecondaryNode(Node):
@@ -294,11 +295,12 @@ class SecondaryNode(Node):
                                                    verbose=verbose)
         return super().fit(input_data=secondary_input)
 
-    def predict(self, input_data: InputData, verbose=False) -> OutputData:
+    def predict(self, input_data: InputData, output_mode: str = 'default', verbose=False) -> OutputData:
         """
         Predict using the model located in the secondary node
 
         :param input_data: data used for prediction
+        :param output_mode: desired output for models (e.g. labels, probs, full_probs)
         :param verbose: flag used for status printing to console, default False
         """
         if verbose:
@@ -308,7 +310,7 @@ class SecondaryNode(Node):
                                                    parent_operation='predict',
                                                    verbose=verbose)
 
-        return super().predict(input_data=secondary_input)
+        return super().predict(input_data=secondary_input, output_mode=output_mode, verbose=verbose)
 
     def fine_tune(self, input_data: InputData, recursive: bool = True,
                   max_lead_time: timedelta = timedelta(minutes=5), iterations: int = 30,

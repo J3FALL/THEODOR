@@ -5,11 +5,10 @@ import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.metrics import roc_auc_score as roc_auc
 
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.composer import ComposerRequirements, DummyChainTypeEnum, DummyComposer
-from fedot.core.models.data import InputData, train_test_data_setup
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode
+from fedot.core.data.data import InputData, train_test_data_setup
 from fedot.core.repository.dataset_types import DataTypesEnum
-from fedot.core.repository.quality_metrics_repository import ClassificationMetricsEnum, MetricsRepository
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 
 np.random.seed(1)
@@ -19,16 +18,8 @@ N_FEATURES = 10
 CORRECT_MODEL_AUC_THR = 0.25
 
 
-def compose_chain(data: InputData) -> Chain:
-    composer_requirements = ComposerRequirements(primary=['logit'],
-                                                 secondary=['logit', 'xgboost'])
-
-    metric_function = MetricsRepository().metric_by_id(ClassificationMetricsEnum.ROCAUC)
-    dummy_composer = DummyComposer(dummy_chain_type=DummyChainTypeEnum.hierarchical, initial_chain=None,
-                                   composer_requirements=composer_requirements,
-                                   metrics=metric_function)
-
-    chain = dummy_composer.compose_chain(data=data, is_visualise=False)
+def generate_chain() -> Chain:
+    chain = Chain(PrimaryNode('logit'))
     return chain
 
 
@@ -42,7 +33,8 @@ def get_roc_auc_value(chain: Chain, train_data: InputData, test_data: InputData)
 
 
 def get_synthetic_input_data(n_samples=10000, n_features=10, random_state=None) -> InputData:
-    synthetic_data = make_classification(n_samples=n_samples, n_features=n_features, random_state=random_state)
+    synthetic_data = make_classification(n_samples=n_samples,
+                                         n_features=n_features, random_state=random_state)
     input_data = InputData(idx=np.arange(0, len(synthetic_data[1])),
                            features=synthetic_data[0],
                            target=synthetic_data[1],
@@ -66,7 +58,7 @@ def test_model_fit_and_predict_correctly():
     """Checks whether the model fits and predict correctly on the synthetic dataset"""
     data = get_synthetic_input_data(N_SAMPLES, N_FEATURES, random_state=1)
 
-    chain = compose_chain(data=data)
+    chain = generate_chain()
     train_data, test_data = train_test_data_setup(data)
 
     chain.fit(input_data=train_data)
@@ -86,7 +78,7 @@ def test_model_fit_correctly_but_predict_incorrectly():
     test_data = get_synthetic_input_data(N_SAMPLES, N_FEATURES, random_state=2)
     test_data.features = deepcopy(train_data.features)
 
-    chain = compose_chain(data=train_data)
+    chain = generate_chain()
     chain.fit(input_data=train_data)
     roc_auc_value_train, roc_auc_value_test = get_roc_auc_value(chain, train_data, test_data)
     train_auc_thr = get_auc_threshold(roc_auc_value_train)
@@ -103,7 +95,7 @@ def test_model_fit_correctly_but_random_predictions_on_test():
     train_data = get_synthetic_input_data(N_SAMPLES, N_FEATURES, random_state=1)
     test_data = get_random_target_data(train_data)
 
-    chain = compose_chain(data=train_data)
+    chain = generate_chain()
     chain.fit(input_data=train_data)
     roc_auc_value_train, roc_auc_value_test = get_roc_auc_value(chain, train_data, test_data)
     train_auc_thr = get_auc_threshold(roc_auc_value_train)
@@ -122,13 +114,11 @@ def test_model_predictions_on_train_test_random():
 
     train_data, test_data = train_test_data_setup(data)
 
-    chain = compose_chain(data=train_data)
+    chain = generate_chain()
     chain.fit(input_data=train_data)
     roc_auc_value_train, roc_auc_value_test = get_roc_auc_value(chain, train_data, test_data)
     train_auc_thr = get_auc_threshold(roc_auc_value_train)
     test_auc_thr = get_auc_threshold(roc_auc_value_test)
-    print(roc_auc_value_train)
-    print(roc_auc_value_test)
 
     assert test_auc_thr <= CORRECT_MODEL_AUC_THR
     assert train_auc_thr <= CORRECT_MODEL_AUC_THR

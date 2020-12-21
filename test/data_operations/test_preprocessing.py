@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 from sklearn.datasets import load_iris
 
-from fedot.core.composer.node import PrimaryNode
-from fedot.core.models.data import InputData
-from fedot.core.models.preprocessing import Normalization
+from fedot.core.chains.node import PrimaryNode
+from fedot.core.data.data import InputData
+from fedot.core.data.preprocessing import Normalization
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 

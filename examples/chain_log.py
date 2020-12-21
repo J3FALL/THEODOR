@@ -1,9 +1,9 @@
 import os
 
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.log import default_log
 from examples.chain_tune import get_case_train_test_data
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.log import default_log
 
 
 def get_simple_chain(log):

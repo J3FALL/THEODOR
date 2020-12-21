@@ -1,4 +1,5 @@
 import gc
+from datetime import timedelta
 from typing import Optional
 
 import h2o
@@ -7,10 +8,9 @@ from h2o import H2OFrame
 from h2o.automl import H2OAutoML
 from tpot import TPOTClassifier, TPOTRegressor
 
-from fedot.core.models.data import InputData
+from fedot.core.data.data import InputData
 from fedot.core.models.evaluation.evaluation import EvaluationStrategy
 from fedot.core.repository.tasks import TaskTypesEnum
-from datetime import timedelta
 
 
 def fit_tpot(data: InputData, max_run_time_min: int):

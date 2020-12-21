@@ -6,10 +6,10 @@ import numpy as np
 import pytest
 from sklearn.metrics import mean_squared_error as mse, roc_auc_score as roc
 
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.chain_tune import Tune
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.models.data import InputData, train_test_data_setup
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.chain_tune import Tune
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.data.data import InputData, train_test_data_setup
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 from test.test_chain_import_export import create_four_depth_chain
 

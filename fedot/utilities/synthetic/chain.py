@@ -1,7 +1,7 @@
 import random
 from typing import List
 
-from fedot.core.composer.chain import Chain
+from fedot.core.chains.chain import Chain
 from fedot.utilities.synthetic.chain_template import \
     (chain_template_balanced_tree, chain_template_random,
      fit_template, real_chain)

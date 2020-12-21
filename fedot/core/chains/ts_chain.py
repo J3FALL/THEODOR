@@ -1,8 +1,9 @@
 from copy import copy
+
 import numpy as np
 
-from fedot.core.composer.chain import Chain
-from fedot.core.models.data import InputData, OutputData
+from fedot.core.chains.chain import Chain
+from fedot.core.data.data import InputData, OutputData
 from fedot.core.repository.tasks import TaskTypesEnum
 
 

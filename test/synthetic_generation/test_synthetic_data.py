@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from fedot.core.models.data import InputData
+from fedot.core.data.data import InputData
 from fedot.utilities.synthetic.data import (
     classification_dataset, gauss_quantiles_dataset)
 from fedot.utilities.synthetic.data_benchmark import synthetic_benchmark_dataset

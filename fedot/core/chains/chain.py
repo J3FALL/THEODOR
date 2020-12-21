@@ -5,9 +5,9 @@ from uuid import uuid4
 
 import networkx as nx
 
-from fedot.core.composer.node import (FittedModelCache, Node, PrimaryNode, SecondaryNode, SharedCache)
-from fedot.core.log import default_log, Log
-from fedot.core.models.data import InputData
+from fedot.core.chains.node import (FittedModelCache, Node, PrimaryNode, SecondaryNode, SharedCache)
+from fedot.core.data.data import InputData
+from fedot.core.log import Log, default_log
 from fedot.core.repository.tasks import TaskTypesEnum
 from fedot.utilities.synthetic.chain_template_new import ChainTemplate
 
@@ -86,19 +86,25 @@ class Chain:
         train_predicted = self.root_node.fit(input_data=input_data, verbose=verbose)
         return train_predicted
 
-    def predict(self, input_data: InputData):
+    def predict(self, input_data: InputData, output_mode: str = 'default'):
         """
         Run the predict process in all nodes in chain starting with root.
 
         :param input_data: data for prediction
+        :param output_mode: desired form of output for models. Available options are:
+                'default' (as is),
+                'labels' (numbers of classes - for classification) ,
+                'probs' (probabilities - for classification =='default'),
+                'full_probs' (return all probabilities - for binary classification).
         :return: array of predicted target values
         """
+
         if not self.is_all_cache_actual():
             ex = 'Trained model cache is not actual or empty'
             self.log.error(ex)
-            raise Exception(ex)
+            raise ValueError(ex)
 
-        result = self.root_node.predict(input_data=input_data)
+        result = self.root_node.predict(input_data=input_data, output_mode=output_mode)
         return result
 
     def fine_tune_primary_nodes(self, input_data: InputData, iterations: int = 30,

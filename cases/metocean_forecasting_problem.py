@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import mean_squared_error as mse
 
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.composer.ts_chain import TsForecastingChain
-from fedot.core.models.data import InputData, OutputData
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.chains.ts_chain import TsForecastingChain
+from fedot.core.data.data import InputData, OutputData
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum, TsForecastingParams
 from fedot.core.utils import project_root

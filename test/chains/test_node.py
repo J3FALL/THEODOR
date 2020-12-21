@@ -4,8 +4,8 @@ from sklearn.datasets import load_iris
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
-from fedot.core.composer.node import PrimaryNode
-from fedot.core.models.data import InputData, train_test_data_setup
+from fedot.core.chains.node import PrimaryNode
+from fedot.core.data.data import InputData, train_test_data_setup
 from fedot.core.models.model import Model
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum

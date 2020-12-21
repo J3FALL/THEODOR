@@ -3,8 +3,9 @@ from datetime import timedelta
 import numpy as np
 
 from fedot.core.algorithms.time_series.prediction import post_process_forecasted_ts
+from fedot.core.data.data import InputData
 from fedot.core.log import Log, default_log
-from fedot.core.models.data import InputData
+from fedot.core.models.evaluation.evaluation import EvaluationStrategy
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.model_types_repository import ModelMetaInfo, ModelTypesRepository
 from fedot.core.repository.tasks import Task, TaskTypesEnum, compatible_task_types
@@ -58,7 +59,7 @@ class Model:
         model_params = self.params
         return f'n_{model_type}_{model_params}'
 
-    def _init(self, task: Task):
+    def _init(self, task: Task, **kwargs):
         params_for_fit = None
         if self.params != DEFAULT_PARAMS_STUB:
             params_for_fit = self.params
@@ -69,6 +70,9 @@ class Model:
         except Exception as ex:
             self.log.error(f'Can not find evaluation strategy because of {ex}')
             raise ex
+
+        if 'output_mode' in kwargs:
+            self._eval_strategy.output_mode = kwargs['output_mode']
 
     def fit(self, data: InputData):
         """
@@ -88,7 +92,7 @@ class Model:
 
         return fitted_model, predict_train
 
-    def predict(self, fitted_model, data: InputData):
+    def predict(self, fitted_model, data: InputData, output_mode: str = 'default'):
         """
         This method is used for defining and running of the evaluation strategy
         to predict with the data provided
@@ -96,7 +100,7 @@ class Model:
         :param fitted_model: trained model object
         :param data: data used for prediction
         """
-        self._init(data.task)
+        self._init(data.task, output_mode=output_mode)
 
         prepared_data = data.prepare_for_modelling(is_for_fit=False)
 

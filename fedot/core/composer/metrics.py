@@ -5,8 +5,8 @@ from copy import copy
 import numpy as np
 from sklearn.metrics import f1_score, mean_squared_error, roc_auc_score
 
-from fedot.core.composer.chain import Chain
-from fedot.core.models.data import InputData, OutputData
+from fedot.core.chains.chain import Chain
+from fedot.core.data.data import InputData, OutputData
 from fedot.core.repository.tasks import TaskTypesEnum
 
 

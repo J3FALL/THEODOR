@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from fedot.core.composer.node import PrimaryNode
-from fedot.core.composer.ts_chain import TsForecastingChain
-from fedot.utilities.ts_gapfilling import SimpleGapFiller, ModelGapFiller
+from fedot.core.chains.node import PrimaryNode
+from fedot.core.chains.ts_chain import TsForecastingChain
+from fedot.utilities.ts_gapfilling import ModelGapFiller, SimpleGapFiller
 
 
 def generate_synthetic_data(length: int = 2200, periods: int = 5):

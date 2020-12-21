@@ -1,5 +1,5 @@
-from fedot.core.chain_validation import validate
-from fedot.core.composer.chain import Chain
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.chain_validation import validate
 
 
 def constraint_function(chain: Chain):

@@ -1,12 +1,11 @@
 import json
 import os
-import joblib
-
+from typing import List
 from uuid import uuid4
 
-from typing import List
+import joblib
 
-from fedot.core.composer.node import PrimaryNode, SecondaryNode, Node, CachedState
+from fedot.core.chains.node import CachedState, Node, PrimaryNode, SecondaryNode
 from fedot.core.utils import default_fedot_data_dir
 
 DEFAULT_FITTED_MODELS_PATH = os.path.join(default_fedot_data_dir(), 'fitted_models')

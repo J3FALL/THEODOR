@@ -5,7 +5,7 @@ import numpy as np
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.arima_model import ARIMA
 
-from fedot.core.models.data import InputData, OutputData
+from fedot.core.data.data import InputData, OutputData
 from fedot.core.models.evaluation.evaluation import EvaluationStrategy
 from fedot.core.models.tuning.tuners import ForecastingCustomRandomTuner
 

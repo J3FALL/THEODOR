@@ -8,8 +8,8 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, cross_val_
 from skopt import BayesSearchCV
 
 from fedot.core.composer.timer import TunerTimer
+from fedot.core.data.data import InputData, train_test_data_setup
 from fedot.core.log import Log, default_log
-from fedot.core.models.data import InputData, train_test_data_setup
 from fedot.core.models.tuning.tuner_adapter import HyperoptAdapter
 from fedot.core.repository.tasks import TaskTypesEnum
 
@@ -96,6 +96,7 @@ class SklearnTuner(Tuner):
 
     :param search_strategy: strategy used for hyperparameter searching (i.e. random, Bayes, etc.)
     """
+
     def __init__(self, trained_model, tune_data: InputData,
                  params_range: dict,
                  cross_val_fold_num: int,
@@ -128,6 +129,7 @@ class SklearnRandomTuner(SklearnTuner):
     """
     Sklearn tuning strategy using RandomSearchCV
     """
+
     def tune(self) -> Union[Tuple[dict, object], Tuple[None, None]]:
         self.search_strategy = RandomizedSearchCV(estimator=self.trained_model,
                                                   param_distributions=self.params_range,
@@ -141,6 +143,7 @@ class SklearnGridSearchTuner(SklearnTuner):
     """
     Sklearn tuning strategy using GridSearchCV
     """
+
     def tune(self) -> Union[Tuple[dict, object], Tuple[None, None]]:
         self.search_strategy = GridSearchCV(estimator=self.trained_model,
                                             param_grid=self.params_range,
@@ -153,6 +156,7 @@ class SklearnBayesSearchCV(SklearnTuner):
     """
     Sklearn tuning strategy using BayesSearchCV
     """
+
     def tune(self) -> Union[Tuple[dict, object], Tuple[None, None]]:
         self.search_strategy = BayesSearchCV(estimator=self.trained_model,
                                              search_spaces=self.params_range,
@@ -166,6 +170,7 @@ class SklearnCustomRandomTuner(Tuner):
     """
     Sklearn tuning strategy using customized version of RandomSearch with cross validation
     """
+
     def tune(self) -> Union[Tuple[dict, object], Tuple[None, None]]:
         try:
             with TunerTimer() as timer:
@@ -192,6 +197,7 @@ class ForecastingCustomRandomTuner:
     """
     Tuning strategy used for forecasting models
     """
+
     def __init__(self, **kwargs):
         if 'log' not in kwargs:
             self.logger = default_log(__name__)
@@ -282,6 +288,7 @@ class TPETuner(Tuner):
     """
     Tuning strategy using Tree Parzen Estimator from hyperopt library
     """
+
     def tune(self) -> Union[Tuple[dict, object], Tuple[None, None]]:
         try:
             adapter = HyperoptAdapter(self)

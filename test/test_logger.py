@@ -2,11 +2,10 @@ import os
 
 import pytest
 
-from fedot.core.log import Log, default_log
-from fedot.core.models.data import train_test_data_setup, InputData
+from fedot.core.data.data import InputData, train_test_data_setup
+from fedot.core.log import Log, LogManager, default_log
 from fedot.core.models.model import Model
 from test.test_chain_import_export import create_four_depth_chain
-from fedot.core.log import LogManager
 
 
 @pytest.fixture()

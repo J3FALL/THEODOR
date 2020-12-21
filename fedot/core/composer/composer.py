@@ -1,14 +1,11 @@
 import datetime
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import (Any, Callable, List, Optional)
 
-from dataclasses import dataclass
-
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
+from fedot.core.chains.chain import Chain
+from fedot.core.data.data import InputData
 from fedot.core.log import Log, default_log
-from fedot.core.models.data import InputData
-from fedot.core.utils import ComparableEnum as Enum
 
 
 @dataclass
@@ -76,44 +73,3 @@ class Composer(ABC):
         :return: Chain object
         """
         raise NotImplementedError()
-
-
-class DummyChainTypeEnum(Enum):
-    flat = 1,
-    hierarchical = 2
-
-
-class DummyComposer(Composer):
-    def __init__(self, dummy_chain_type: DummyChainTypeEnum,
-                 composer_requirements: ComposerRequirements,
-                 metrics: Optional[Callable],
-                 initial_chain: Optional[Chain] = None):
-        super().__init__(composer_requirements=composer_requirements, metrics=metrics,
-                         initial_chain=initial_chain)
-        self.dummy_chain_type = dummy_chain_type
-
-    def compose_chain(self, data: InputData, is_visualise: bool = False) -> Chain:
-        new_chain = Chain()
-
-        if self.dummy_chain_type == DummyChainTypeEnum.hierarchical:
-            # (y1, y2) -> y
-            last_node = SecondaryNode(self.composer_requirements.secondary[0])
-
-            for requirement_model in self.composer_requirements.primary:
-                new_node = PrimaryNode(requirement_model)
-                new_chain.add_node(new_node)
-                last_node.nodes_from.append(new_node)
-            new_chain.add_node(last_node)
-        elif self.dummy_chain_type == DummyChainTypeEnum.flat:
-            # (y1) -> (y2) -> y
-            first_node = PrimaryNode(self.composer_requirements.primary[0])
-            new_chain.add_node(first_node)
-            prev_node = first_node
-            for requirement_model in self.composer_requirements.secondary:
-                new_node = SecondaryNode(requirement_model)
-                new_node.nodes_from = [prev_node]
-                prev_node = new_node
-                new_chain.add_node(new_node)
-        else:
-            raise NotImplementedError()
-        return new_chain

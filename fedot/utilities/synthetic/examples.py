@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import roc_auc_score as roc_auc
 
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
-from fedot.core.models.data import train_test_data_setup
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.data.data import train_test_data_setup
 from fedot.utilities.synthetic.chain import separately_fit_chain
 from fedot.utilities.synthetic.data import (
     classification_dataset, gauss_quantiles_dataset

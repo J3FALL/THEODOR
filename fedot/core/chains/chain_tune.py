@@ -1,9 +1,9 @@
 from datetime import timedelta
 
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.node import PrimaryNode
-from fedot.core.log import default_log, Log, start_end_log_decorator
-from fedot.core.models.data import InputData
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode
+from fedot.core.data.data import InputData
+from fedot.core.log import Log, default_log, start_end_log_decorator
 from fedot.utilities.synthetic.chain_template_new import ChainTemplate, \
     ModelTemplate, extract_subtree_root
 

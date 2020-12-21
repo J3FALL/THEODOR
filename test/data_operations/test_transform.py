@@ -1,8 +1,8 @@
 import numpy as np
 from numpy import nan
 
-from fedot.core.models.data import InputData
-from fedot.core.models.transformation import direct, ts_to_lagged_table
+from fedot.core.data.data import InputData
+from fedot.core.data.transformation import direct, ts_to_lagged_table
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum, TsForecastingParams
 

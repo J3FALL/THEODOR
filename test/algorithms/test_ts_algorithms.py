@@ -1,7 +1,7 @@
 import numpy as np
 
 from fedot.core.algorithms.time_series.lagged_features import prepare_lagged_ts_for_prediction
-from fedot.core.models.transformation import ts_to_lagged_table
+from fedot.core.data.transformation import ts_to_lagged_table
 from test.data_operations.test_transform import synthetic_forecasting_problem
 
 

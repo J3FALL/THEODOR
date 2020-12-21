@@ -7,19 +7,18 @@ import pandas as pd
 import pytest
 from sklearn.metrics import roc_auc_score as roc_auc
 
-from fedot.core.composer.chain import Chain
-from fedot.core.composer.composer import ComposerRequirements, DummyChainTypeEnum, DummyComposer
+from fedot.core.chains.chain import Chain
+from fedot.core.chains.node import PrimaryNode, SecondaryNode
+from fedot.core.composer.composer import ComposerRequirements
 from fedot.core.composer.gp_composer.fixed_structure_composer import FixedStructureComposerBuilder
 from fedot.core.composer.gp_composer.gp_composer import GPComposerBuilder, GPComposerRequirements
-from fedot.core.composer.node import PrimaryNode, SecondaryNode
 from fedot.core.composer.optimisers.gp_optimiser import GPChainOptimiserParameters, GeneticSchemeTypesEnum
 from fedot.core.composer.random_composer import RandomSearchComposer
-from fedot.core.models.data import InputData
-from fedot.core.repository.dataset_types import DataTypesEnum
+from fedot.core.data.data import InputData
 from fedot.core.repository.model_types_repository import ModelTypesRepository
 from fedot.core.repository.quality_metrics_repository import ClassificationMetricsEnum, MetricsRepository
 from fedot.core.repository.tasks import Task, TaskTypesEnum
-from test.chain.test_chain_tuning import get_class_chain
+from test.chains.test_chain_tuning import get_class_chain
 
 
 def _to_numerical(categorical_ids: np.ndarray):
@@ -35,49 +34,6 @@ def file_data_setup():
         os.path.join(test_file_path, file))
     input_data.idx = _to_numerical(categorical_ids=input_data.idx)
     return input_data
-
-
-def test_dummy_composer_hierarchical_chain_build_correct():
-    primary = ['logit', 'xgboost']
-    secondary = ['logit']
-    composer_requirements = ComposerRequirements(primary=primary,
-                                                 secondary=secondary)
-    composer = DummyComposer(dummy_chain_type=DummyChainTypeEnum.hierarchical,
-                             composer_requirements=composer_requirements, metrics=None)
-    empty_data = InputData(idx=np.zeros(1), features=np.zeros(1), target=np.zeros(1),
-                           task=Task(TaskTypesEnum.classification),
-                           data_type=DataTypesEnum.table)
-    new_chain = composer.compose_chain(data=empty_data)
-
-    assert len(new_chain.nodes) == 3
-    assert isinstance(new_chain.nodes[0], PrimaryNode)
-    assert isinstance(new_chain.nodes[1], PrimaryNode)
-    assert isinstance(new_chain.nodes[2], SecondaryNode)
-    assert new_chain.nodes[2].nodes_from[0] is new_chain.nodes[0]
-    assert new_chain.nodes[2].nodes_from[1] is new_chain.nodes[1]
-    assert new_chain.nodes[1].nodes_from is None
-
-
-def test_dummy_composer_flat_chain_build_correct():
-    primary = ['logit']
-    secondary = ['logit', 'xgboost']
-
-    composer_requirements = ComposerRequirements(primary=primary,
-                                                 secondary=secondary)
-    composer = DummyComposer(dummy_chain_type=DummyChainTypeEnum.flat, composer_requirements=composer_requirements,
-                             metrics=None)
-    empty_data = InputData(idx=np.zeros(1), features=np.zeros(1), target=np.zeros(1),
-                           task=Task(TaskTypesEnum.classification), data_type=DataTypesEnum.table)
-
-    new_chain = composer.compose_chain(data=empty_data)
-
-    assert len(new_chain.nodes) == 3
-    assert isinstance(new_chain.nodes[0], PrimaryNode)
-    assert isinstance(new_chain.nodes[1], SecondaryNode)
-    assert isinstance(new_chain.nodes[2], SecondaryNode)
-    assert new_chain.nodes[1].nodes_from[0] is new_chain.nodes[0]
-    assert new_chain.nodes[2].nodes_from[0] is new_chain.nodes[1]
-    assert new_chain.nodes[0].nodes_from is None
 
 
 @pytest.mark.parametrize('data_fixture', ['file_data_setup'])

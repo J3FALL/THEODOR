@@ -4,12 +4,12 @@ from typing import (
     Optional,
 )
 
-from fedot.core.composer.chain import Chain
+from fedot.core.chains.chain import Chain
 from fedot.core.composer.composer import ComposerRequirements
 from fedot.core.composer.gp_composer.gp_composer import GPComposer, GPComposerBuilder
 from fedot.core.composer.optimisers.gp_optimiser import GPChainOptimiserParameters
 from fedot.core.composer.optimisers.mutation import MutationTypesEnum
-from fedot.core.models.data import InputData
+from fedot.core.data.data import InputData
 from fedot.core.repository.tasks import Task
 
 

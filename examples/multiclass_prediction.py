@@ -5,17 +5,17 @@ from datetime import timedelta
 import numpy as np
 from sklearn.metrics import roc_auc_score as roc_auc
 
-from fedot.core.composer.chain import Chain
+from examples.utils import create_multi_clf_examples_from_excel
+from fedot.core.chains.chain import Chain
 from fedot.core.composer.gp_composer.gp_composer import \
     GPComposerBuilder, GPComposerRequirements
 from fedot.core.composer.visualisation import ComposerVisualiser
-from fedot.core.models.data import InputData
+from fedot.core.data.data import InputData
 from fedot.core.repository.model_types_repository import ModelTypesRepository
 from fedot.core.repository.quality_metrics_repository import \
     ClassificationMetricsEnum, MetricsRepository
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 from fedot.core.utils import probs_to_labels
-from examples.utils import create_multi_clf_examples_from_excel
 
 random.seed(1)
 np.random.seed(1)

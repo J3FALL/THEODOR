@@ -8,7 +8,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from fedot.core.algorithms.time_series.lagged_features import prepare_lagged_ts_for_prediction
-from fedot.core.models.preprocessing import ImputationStrategy
+from fedot.core.data.preprocessing import ImputationStrategy
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 

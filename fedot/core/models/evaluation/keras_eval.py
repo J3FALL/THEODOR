@@ -5,7 +5,7 @@ from typing import Optional
 import numpy as np
 import tensorflow as tf
 
-from fedot.core.models.data import InputData, OutputData
+from fedot.core.data.data import InputData, OutputData
 from fedot.core.models.evaluation.evaluation import EvaluationStrategy
 from fedot.core.repository.tasks import extract_task_param
 
