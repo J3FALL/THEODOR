@@ -1,9 +1,11 @@
 import operator
+from copy import copy
 from datetime import timedelta
 from typing import Callable, Tuple, Union
 
 from numpy.random import choice as nprand_choice, randint
-from sklearn.metrics import make_scorer, mean_squared_error, mean_squared_error as mse, roc_auc_score
+from sklearn.metrics import make_scorer, mean_squared_error, \
+    mean_squared_error as mse, roc_auc_score, silhouette_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, cross_val_score
 from skopt import BayesSearchCV
 
@@ -33,6 +35,8 @@ class Tuner:
             make_scorer(roc_auc_score, greater_is_better=True, needs_proba=True),
         TaskTypesEnum.regression:
             make_scorer(mean_squared_error, greater_is_better=False),
+        TaskTypesEnum.clustering:
+            make_scorer(silhouette_score, greater_is_better=True),
     }
 
     def __init__(self, trained_model, tune_data: InputData,
@@ -50,7 +54,7 @@ class Tuner:
         self.scorer = self.__tuning_metric_by_type.get(self.tune_data.task.task_type, None)
         self.max_iterations = iterations
         self.default_score, self.default_params = \
-            self.get_cross_val_score_and_params(self.trained_model)
+            self.get_score_and_params(self.trained_model)
 
         if not log:
             self.log = default_log(__name__)
@@ -69,7 +73,8 @@ class Tuner:
     def _is_score_better(self, previous, current):
         __compare = {
             TaskTypesEnum.classification: operator.gt,
-            TaskTypesEnum.regression: operator.gt
+            TaskTypesEnum.regression: operator.gt,
+            TaskTypesEnum.clustering: operator.gt
         }
         comparison = __compare.get(self.tune_data.task.task_type)
         try:
@@ -81,10 +86,19 @@ class Tuner:
     def is_better_than_default(self, score):
         return self._is_score_better(self.default_score, score)
 
-    def get_cross_val_score_and_params(self, model):
-        score = cross_val_score(model, self.tune_data.features,
-                                self.tune_data.target, scoring=self.scorer,
-                                cv=self.cross_val_fold_num).mean()
+    def get_score_and_params(self, model):
+        if self.tune_data.target is not None:
+            score = cross_val_score(model, self.tune_data.features,
+                                    self.tune_data.target, scoring=self.scorer,
+                                    cv=self.cross_val_fold_num).mean()
+        else:
+            score = 0
+            for _ in range(self.cross_val_fold_num):
+                model.fit(self.tune_data.features)
+                predict = model.predict(self.tune_data.features)
+                score += silhouette_score(self.tune_data.features, predict)
+            score = score / self.cross_val_fold_num
+
         params = model.get_params()
 
         return score, params
@@ -115,7 +129,7 @@ class SklearnTuner(Tuner):
     def _sklearn_tune(self, tune_data: InputData):
         try:
             search = self.search_strategy.fit(tune_data.features, tune_data.target.ravel())
-            new_score, _ = self.get_cross_val_score_and_params(search.best_estimator_)
+            new_score, _ = self.get_score_and_params(search.best_estimator_)
             if self.is_better_than_default(new_score):
                 return search.best_params_, search.best_estimator_
             else:
@@ -179,10 +193,10 @@ class SklearnCustomRandomTuner(Tuner):
                 for _ in range(self.max_iterations):
                     params = {k: nprand_choice(v) for k, v in self.params_range.items()}
                     self.trained_model.set_params(**params)
-                    score, _ = self.get_cross_val_score_and_params(self.trained_model)
+                    score, _ = self.get_score_and_params(self.trained_model)
                     if self._is_score_better(previous=best_score, current=score):
                         best_params = params
-                        best_model = self.trained_model
+                        best_model = copy(self.trained_model)
                         best_score = score
 
                     if timer.is_time_limit_reached(self.time_limit):
@@ -294,7 +308,7 @@ class TPETuner(Tuner):
             adapter = HyperoptAdapter(self)
             best_params, best_model = adapter.tune(iterations=self.max_iterations,
                                                    timeout_sec=self.time_limit.seconds)
-            new_score, _ = self.get_cross_val_score_and_params(best_model)
+            new_score, _ = self.get_score_and_params(best_model)
 
             if self.is_better_than_default(new_score):
                 return best_params, best_model

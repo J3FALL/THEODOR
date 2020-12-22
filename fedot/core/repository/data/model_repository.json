@@ -69,7 +69,7 @@
 	  "strategies": ["fedot.core.models.evaluation.ensembling", "EnsemblingStrategy"],
 	  "accepted_node_types": ["secondary"],
 	  "forbidden_node_types": "[]",
-	  "tags": ["without_preprocessing", "ensembler"],
+	  "tags": ["without_preprocessing", "ensembler", "non-default"],
 	  "description": "Implementations of the models for the the static ensembling of several models"
 	},
 	"keras_forecasting": {
@@ -177,10 +177,13 @@
 	"kmeans": {
 	  "meta": "sklearn_clust"
 	},
-	"dbscan": {
+	"meanshift_clust": {
 	  "meta": "sklearn_clust"
 	},
 	"aglo_clust": {
+	  "meta": "sklearn_clust"
+	},
+	"spectral_clust": {
 	  "meta": "sklearn_clust"
 	},
 	"direct_data_model": {
@@ -202,11 +205,7 @@
 	  "meta": "keras_forecasting",
 	  "tags": ["deep"]
 	},
-	"equal_ensembler": {
-	  "meta": "ensembler",
-	  "tags": ["linear"]
-	},
-	"voting_ensembler": {
+	"consensus_ensembler": {
 	  "meta": "ensembler",
 	  "tags": ["linear"]
 	}

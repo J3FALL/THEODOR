@@ -3,9 +3,8 @@ from abc import abstractmethod
 from datetime import timedelta
 from typing import Optional
 
-from sklearn.cluster import DBSCAN as SklearnDBScan, KMeans as SklearnKmeans
-from sklearn.cluster import AgglomerativeClustering as SklearnAgloClust, \
-    DBSCAN as SklearnDBScan, KMeans as SklearnKmeans
+from sklearn.cluster import AgglomerativeClustering as SklearnAgloClust, KMeans as SklearnKmeans, \
+    MeanShift as SklearnMeanShift, SpectralClustering as SklearnSpectralClust
 from sklearn.discriminant_analysis import (LinearDiscriminantAnalysis,
                                            QuadraticDiscriminantAnalysis)
 from sklearn.ensemble import (AdaBoostRegressor,
@@ -123,8 +122,9 @@ class SkLearnEvaluationStrategy(EvaluationStrategy):
         'ridge': SklearnRidgeReg,
         'lasso': SklearnLassoReg,
         'kmeans': SklearnKmeans,
-        'dbscan': SklearnDBScan,
+        'meanshift_clust': SklearnMeanShift,
         'aglo_clust': SklearnAgloClust,
+        'spectral_clust': SklearnSpectralClust,
         'svc': CustomSVC,
         'svr': SklearnSVR,
         'sgdr': SklearnSGD,
@@ -252,11 +252,12 @@ class SkLearnClusteringStrategy(SkLearnEvaluationStrategy):
         :param train_data: data used for model training
         :return:
         """
-        try:
-            # TODO auto detect the number of clusters
-            sklearn_model = self._sklearn_model_impl(n_clusters=3)
-        except TypeError as _:
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        if self.params_for_fit:
+            sklearn_model = self._sklearn_model_impl(**self.params_for_fit)
+        else:
             sklearn_model = self._sklearn_model_impl()
+
         sklearn_model = sklearn_model.fit(train_data.features)
         return sklearn_model
 
@@ -272,15 +273,3 @@ class SkLearnClusteringStrategy(SkLearnEvaluationStrategy):
         except Exception as _:
             prediction = trained_model.fit_predict(predict_data.features)
         return prediction
-
-    def fit_tuned(self, train_data: InputData, iterations: int = 30,
-                  max_lead_time: timedelta = timedelta(minutes=5)):
-        """
-        This method is used for hyperparameter searching
-
-        :param train_data: data used for hyperparameter searching
-        :param iterations: max number of iterations evaluable for hyperparameter optimization
-        :param max_lead_time: max time(seconds) for tuning evaluation
-        :return:
-        """
-        raise NotImplementedError()

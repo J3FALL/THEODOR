@@ -1,9 +1,8 @@
-from copy import copy
 from typing import Optional
 
-import numpy as np
-
 from fedot.core.data.data import InputData
+from fedot.core.models.evaluation.custom_models.consensus_clustering \
+    import ConsensusClusterer
 from fedot.core.models.evaluation.evaluation import EvaluationStrategy
 
 
@@ -11,24 +10,19 @@ def _most_frequent(data):
     return max(set(data), key=list(data).count)
 
 
-def select_major(_, data: InputData):
-    final_prediction = copy(data.features[:, 0])
-    for item_ind in range(data.features.shape[0]):
-        final_prediction[item_ind] = _most_frequent(data.features[item_ind, :])
-    return final_prediction
+def consensus_fit(data: InputData, params):
+    ensembler = ConsensusClusterer(data)
+    ensembler.fit(data)
+    return ensembler
 
 
-def mix_equal(model, data: InputData):
-    final_prediction = copy(data.features[:, 0])
-    for item_ind in range(data.features.shape[0]):
-        final_prediction[item_ind] = np.mean(data.features[item_ind, :])
-    return final_prediction
+def consensus_predict(model, data: InputData):
+    return model.predict(data)
 
 
 class EnsemblingStrategy(EvaluationStrategy):
     _model_functions_by_type = {
-        'voting_ensembler': (None, select_major),
-        'equal_ensembler': (None, mix_equal)
+        'consensus_ensembler': (consensus_fit, consensus_predict),
     }
 
     def __init__(self, model_type: str, params: Optional[dict] = None):

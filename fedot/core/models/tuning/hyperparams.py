@@ -2,7 +2,7 @@ import numpy as np
 
 # the parameters ranges are partially derived from https://github.com/EpistasisLab/tpot
 params_range_by_model = {
-    'kmeans': {'n_clusters': list(range(2, 5))},
+    'kmeans': {'n_clusters': list(range(2, 10))},
     'knn': {
         'n_neighbors': list(range(1, 50)),
         'weights': ["uniform", "distance"],
