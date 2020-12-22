@@ -30,3 +30,17 @@ def test_chain_with_clusters_fit_correct():
 
     roc_threshold = 0.5
     assert mean_roc_on_test > roc_threshold
+
+
+def test_consensus_clustering():
+    data = get_synthetic_input_data(n_samples=50)
+
+    model_first = PrimaryNode('kmeans')
+    model_second = PrimaryNode('spectral_clust')
+    root = SecondaryNode('consensus_ensembler', nodes_from=[model_first, model_second])
+    root.custom_params = {'n_clust': 2}
+    composite_model = Chain(root)
+    composite_model.fit(data)
+
+    labels = composite_model.predict(data)
+    assert set(labels.predict) == set(data.target)

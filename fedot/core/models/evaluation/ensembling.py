@@ -10,8 +10,11 @@ def _most_frequent(data):
     return max(set(data), key=list(data).count)
 
 
-def consensus_fit(data: InputData, params):
-    ensembler = ConsensusClusterer(data)
+def consensus_fit(data: InputData, params: dict):
+    n_clust = None
+    if params is not None:
+        n_clust = params.get('n_clust', None)
+    ensembler = ConsensusClusterer(n_clust=n_clust)
     ensembler.fit(data)
     return ensembler
 
