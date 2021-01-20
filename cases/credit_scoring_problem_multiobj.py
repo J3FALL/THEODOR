@@ -46,7 +46,7 @@ def run_credit_scoring_problem(train_file_path, test_file_path,
     composer_requirements = GPComposerRequirements(
         primary=available_model_types,
         secondary=available_model_types, max_arity=3,
-        max_depth=3, pop_size=4, num_of_generations=4,
+        max_depth=3, pop_size=20, num_of_generations=8,
         crossover_prob=0.8, mutation_prob=0.8, max_lead_time=max_lead_time, model_fit_time_constraint=900,
         start_depth=2)
 

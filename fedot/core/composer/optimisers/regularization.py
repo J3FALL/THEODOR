@@ -39,7 +39,8 @@ def decremental_regularization(population: List[Any], objective_function: Callab
     additional_inds = [ind for ind in additional_inds if constraint_function(ind)]
 
     is_multi_obj = (population[0].fitness) is MultiObjFitness
-    evaluate_individuals(additional_inds, objective_function, is_multi_obj)
+    if additional_inds:
+        evaluate_individuals(additional_inds, objective_function, is_multi_obj)
 
     if additional_inds and len(additional_inds) > size:
         additional_inds = sorted(additional_inds, key=lambda ind: ind.fitness)[:size]

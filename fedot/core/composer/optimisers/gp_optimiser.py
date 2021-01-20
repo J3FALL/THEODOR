@@ -134,8 +134,7 @@ class GPChainOptimiser:
 
             self._add_to_history(self.population)
 
-            if not self.parameters.multi_objective:
-                self.log_info_about_best()
+            self.log_info_about_best()
 
             for self.generation_num in range(self.requirements.num_of_generations - 1):
                 self.log.info(f'Generation num: {self.generation_num}')
@@ -191,6 +190,8 @@ class GPChainOptimiser:
                 self.history.archive_history.append(deepcopy(self.archive))
 
             best = self.result_individual()
+            self.log.info("Result:")
+            self.log_info_about_best()
 
         return best, self.history
 
@@ -210,7 +211,8 @@ class GPChainOptimiser:
 
     @property
     def num_of_inds_in_next_pop(self):
-        return self.requirements.pop_size - 1 if self.with_elitism else self.requirements.pop_size
+        return self.requirements.pop_size - 1 if self.with_elitism and not self.parameters.multi_objective \
+            else self.requirements.pop_size
 
     def update_stagnation_counter(self) -> int:
         value = 0
@@ -311,7 +313,7 @@ class GPChainOptimiser:
         return np.isclose(first_fitness, second_fitness, atol=atol, rtol=rtol)
 
     def is_equal_archive(self, old_archive: Any, new_archive: Any) -> bool:
-        if len(self.prev_best.items) != len(self.archive.items):
+        if len(old_archive.items) != len(new_archive.items):
             fronts_coincidence = False
         else:
             are_inds_found = []

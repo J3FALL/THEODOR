@@ -283,6 +283,7 @@ class ComposerVisualiser:
             ax.scatter(obj_first, obj_second, c='green')
 
         ax.scatter(pareto_obj_first, pareto_obj_second, c='red')
+        plt.plot(pareto_obj_first, pareto_obj_second, color='r')
 
         if generation_num is not None:
             ax.set_title(f'Pareto front, Generation: {generation_num}', fontsize=15)
@@ -317,8 +318,8 @@ class ComposerVisualiser:
         files = []
         array_for_analysis = individuals if individuals else pareto_fronts
         all_objectives = ComposerVisualiser.objectives_transform(array_for_analysis, objectives_numbers)
-        min_x, max_x = min(all_objectives[0]) - 0.1, max(all_objectives[0]) + 0.1
-        min_y, max_y = min(all_objectives[1]) - 0.1, max(all_objectives[1]) + 0.1
+        min_x, max_x = min(all_objectives[0]) - 0.01, max(all_objectives[0]) + 0.01
+        min_y, max_y = min(all_objectives[1]) - 0.01, max(all_objectives[1]) + 0.01
         folder = f'{ComposerVisualiser.temp_path}'
         for i, front in enumerate(pareto_fronts):
             file_name = f'pareto{i}.png'
