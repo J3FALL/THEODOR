@@ -1,6 +1,6 @@
 from fedot.core.composer.metrics import RmseMetric, RocAucMetric
-from fedot.core.repository.tasks import Task, TaskTypesEnum
-from fedot.core.models.data import InputData, OutputData
+from fedot.core.repository.tasks import TaskTypesEnum
+from fedot.core.data.data import InputData, OutputData
 
 
 class MetricByTask:

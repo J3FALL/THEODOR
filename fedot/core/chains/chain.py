@@ -197,7 +197,7 @@ class Chain:
         for subtree_node in node.ordered_subnodes_hierarchy:
             self.nodes.remove(subtree_node)
 
-    def delete_node_new(self, node: Node):
+    def delete_node_with_subtree(self, node: Node):
         """ This function DOES NOT work for the case like this:
         PNode    PNode
             \  /
