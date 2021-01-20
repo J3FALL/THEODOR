@@ -282,3 +282,18 @@ def test_update_node_in_chain_raise_exception():
         chain.update_node(old_node=first, new_node=replacing_node)
 
     assert str(exc.value) == "Can't update PrimaryNode with SecondaryNode"
+
+
+def test_delete_node_with_subtree():
+    first = PrimaryNode(model_type='logit')
+    second = PrimaryNode(model_type='lda')
+    third = SecondaryNode(model_type='knn', nodes_from=[first, second])
+    final = SecondaryNode(model_type='xgboost',
+                          nodes_from=[third])
+    chain = Chain()
+    chain.add_node(final)
+
+    chain.delete_node_with_subtree(third)
+
+    assert len(chain.nodes) == 3
+    assert first in chain.root_node.nodes_from
