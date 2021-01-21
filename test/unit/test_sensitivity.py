@@ -1,12 +1,14 @@
+from unittest.mock import patch
+
+import pytest
+
 from cases.data.data_utils import get_scoring_case_data_paths
 from fedot.core.chains.node import SecondaryNode
 from fedot.core.data.data import InputData
 from fedot.sensitivity.chain_sensitivity import ChainStructureAnalyze
 from fedot.sensitivity.sensitivity_facade import \
-    NodeDeletionAnalyze, NodeAnalysis, NodeTuneAnalyze, NodeReplaceModelAnalyze, NodeAnalyzeApproach
+    NodeDeletionAnalyze, NodeAnalysis, NodeTuneAnalyze, NodeReplaceModelAnalyze
 from test.unit.utilities.test_chain_import_export import create_four_depth_chain
-from unittest.mock import patch
-import pytest
 
 
 def scoring_dataset():

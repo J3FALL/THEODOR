@@ -50,6 +50,7 @@ class Tune:
         """
 
         node = self.chain.root_node
+        # TODO What if root node is Primary? One-node chain
         node.fine_tune(input_data=input_data, max_lead_time=max_lead_time,
                        iterations=iterations, recursive=False)
 

@@ -284,7 +284,7 @@ def test_update_node_in_chain_raise_exception():
     assert str(exc.value) == "Can't update PrimaryNode with SecondaryNode"
 
 
-def test_delete_node_with_subtree():
+def test_delete_node_with_redirection():
     first = PrimaryNode(model_type='logit')
     second = PrimaryNode(model_type='lda')
     third = SecondaryNode(model_type='knn', nodes_from=[first, second])
@@ -297,3 +297,23 @@ def test_delete_node_with_subtree():
 
     assert len(chain.nodes) == 3
     assert first in chain.root_node.nodes_from
+
+
+def test_delete_primary_node_with_redirection():
+    # given
+    first = PrimaryNode(model_type='logit')
+    second = PrimaryNode(model_type='lda')
+    third = SecondaryNode(model_type='knn', nodes_from=[first])
+    final = SecondaryNode(model_type='xgboost',
+                          nodes_from=[second, third])
+    chain = Chain()
+    chain.add_node(final)
+
+    # when
+    chain.delete_node_with_redirection(first)
+
+    new_primary_node = [node for node in chain.nodes if node.model.model_type == 'knn'][0]
+
+    # then
+    assert len(chain.nodes) == 3
+    assert isinstance(new_primary_node, PrimaryNode)

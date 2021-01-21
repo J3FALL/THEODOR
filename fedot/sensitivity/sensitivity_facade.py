@@ -25,9 +25,9 @@ class NodeAnalysis:
 
         results = dict()
         for approach in self.approaches:
-            results[f'{approach}'] = approach(chain=chain,
-                                              train_data=train_data,
-                                              test_data=test_data).analyze(node_id=node_id)
+            results[f'{approach.__name__}'] = approach(chain=chain,
+                                                       train_data=train_data,
+                                                       test_data=test_data).analyze(node_id=node_id)
 
         return results
 
@@ -39,7 +39,7 @@ class NodeAnalyzeApproach(ABC):
         self._test_data = test_data
 
     @abstractmethod
-    def analyze(self, node_id) -> Union[List[float], float]:
+    def analyze(self, node_id) -> Union[List[dict], float]:
         """Create the difference metric(scorer, index, etc) of the changed
         chain in relation to the original one"""
         pass
@@ -64,9 +64,9 @@ class NodeAnalyzeApproach(ABC):
 
     def _get_metric_value(self, chain: Chain, metric: MetricByTask) -> float:
         chain.fit(self._train_data, use_cache=False)
-        predicted_originally = self._chain.predict(self._test_data)
-        metric_value = metric.get_value(self._test_data,
-                                        predicted_originally)
+        predicted = chain.predict(self._test_data)
+        metric_value = metric.get_value(true=self._test_data,
+                                        predicted=predicted)
 
         return metric_value
 
@@ -75,7 +75,7 @@ class NodeDeletionAnalyze(NodeAnalyzeApproach):
     def __init__(self, chain: Chain, train_data, test_data: InputData):
         super(NodeDeletionAnalyze, self).__init__(chain, train_data, test_data)
 
-    def analyze(self, node_id: int) -> Union[List[float], float]:
+    def analyze(self, node_id: int) -> Union[List[dict], float]:
         if node_id == 0:
             # TODO or warning?
             return 0.0
@@ -92,12 +92,15 @@ class NodeDeletionAnalyze(NodeAnalyzeApproach):
 
         return chain_sample
 
+    def __str__(self):
+        return 'NodeDeletionAnalyze'
+
 
 class NodeTuneAnalyze(NodeAnalyzeApproach):
     def __init__(self, chain: Chain, train_data, test_data: InputData):
         super(NodeTuneAnalyze, self).__init__(chain, train_data, test_data)
 
-    def analyze(self, node_id: int) -> Union[List[float], float]:
+    def analyze(self, node_id: int) -> Union[List[dict], float]:
         tuned_chain = Tune(self._chain).fine_tune_certain_node(model_id=node_id,
                                                                input_data=self._train_data,
                                                                max_lead_time=timedelta(minutes=1),
@@ -109,6 +112,9 @@ class NodeTuneAnalyze(NodeAnalyzeApproach):
     def sample(self, *args) -> Union[List[Chain], Chain]:
         raise NotImplemented
 
+    def __str__(self):
+        return 'NodeTuneAnalyze'
+
 
 class NodeReplaceModelAnalyze(NodeAnalyzeApproach):
     def __init__(self, chain: Chain, train_data, test_data: InputData):
@@ -116,7 +122,7 @@ class NodeReplaceModelAnalyze(NodeAnalyzeApproach):
 
     def analyze(self, node_id: int,
                 nodes_to_replace_to: Optional[List[Node]] = None,
-                number_of_random_models: Optional[int] = 3) -> Union[List[float], float]:
+                number_of_random_models: Optional[int] = 3) -> Union[List[dict], float]:
         metric_by_task = MetricByTask(self._train_data.task.task_type)
 
         samples = self.sample(node_id=node_id,
@@ -126,11 +132,13 @@ class NodeReplaceModelAnalyze(NodeAnalyzeApproach):
         original_metric = self._get_metric_value(chain=self._chain, metric=metric_by_task)
 
         loss = []
-        for sample in samples:
-            loss_per_sample = self._compare_with_origin_by_metric(sample,
+        for sample_chain in samples:
+            loss_per_sample = self._compare_with_origin_by_metric(sample_chain,
                                                                   metric_by_task=metric_by_task,
                                                                   original_metric=original_metric)
-            loss.append(loss_per_sample)
+
+            new_node = sample_chain.nodes[node_id]
+            loss.append({f'with {new_node.model.model_type} instead of {self._chain.nodes[node_id]}': loss_per_sample})
 
         return loss
 
@@ -170,3 +178,6 @@ class NodeReplaceModelAnalyze(NodeAnalyzeApproach):
             nodes.append(node_type(model_type=model))
 
         return nodes
+
+    def __str__(self):
+        return 'NodeReplaceModelAnalyze'
