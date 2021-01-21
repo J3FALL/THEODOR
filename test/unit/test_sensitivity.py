@@ -110,11 +110,6 @@ def test_node_analysis_facade_init_defined_approaches():
     # given
     approaches = [NodeDeletionAnalyze, NodeReplaceModelAnalyze]
 
-    # when
-    # node_analysis_result: dict = NodeAnalysis(approaches=approaches).analyze(chain=chain,
-    #                                                                          node_id=node_index,
-    #                                                                          train_data=train_data,
-    #                                                                          test_data=test_data)
     node_analyzer = NodeAnalysis(approaches=approaches)
 
     # then
@@ -122,8 +117,8 @@ def test_node_analysis_facade_init_defined_approaches():
     assert len(node_analyzer.approaches) == 2
 
 
-@patch('fedot.sensitivity.sensitivity_facade.NodeAnalysis.analyze', return_value={'key': 'value'})
-def test_node_analysis_facade_analyze(mock):
+# @patch('fedot.sensitivity.sensitivity_facade.NodeAnalysis.analyze', return_value={'key': 'value'})
+def test_node_analysis_facade_analyze():
     # given
     chain, train_data, test_data, node_index = given_data()
 
@@ -139,8 +134,8 @@ def test_node_analysis_facade_analyze(mock):
 # ------------------------------------------------------------------------------
 # NodeAnalyzeApproach
 
-@patch('fedot.sensitivity.sensitivity_facade.NodeDeletionAnalyze.analyze', return_value=0.0)
-def test_node_deletion_analyze(mock):
+# @patch('fedot.sensitivity.sensitivity_facade.NodeDeletionAnalyze.analyze', return_value=0.0)
+def test_node_deletion_analyze():
     # given
     chain, train_data, test_data, node_index = given_data()
 
@@ -153,8 +148,22 @@ def test_node_deletion_analyze(mock):
     assert isinstance(node_analysis_result, float)
 
 
-@patch('fedot.sensitivity.sensitivity_facade.NodeTuneAnalyze.analyze', return_value=0.0)
-def test_node_tune_analyze(mock):
+def test_node_deletion_analyze_zero_node_id():
+    # given
+    chain, train_data, test_data, node_index = given_data()
+
+    # when
+    node_analysis_result = NodeDeletionAnalyze(chain=chain,
+                                               train_data=train_data,
+                                               test_data=test_data).analyze(node_id=node_index)
+
+    # then
+    assert isinstance(node_analysis_result, float)
+    assert node_analysis_result == 0.0
+
+
+# @patch('fedot.sensitivity.sensitivity_facade.NodeTuneAnalyze.analyze', return_value=0.0)
+def test_node_tune_analyze():
     # given
     chain, train_data, test_data, node_index = given_data()
 
@@ -166,8 +175,8 @@ def test_node_tune_analyze(mock):
     assert isinstance(node_analysis_result, float)
 
 
-@patch('fedot.sensitivity.sensitivity_facade.NodeReplaceModelAnalyze.analyze', return_value=[0.0])
-def test_node_replacement_analyze_defined_nodes(mock):
+# @patch('fedot.sensitivity.sensitivity_facade.NodeReplaceModelAnalyze.analyze', return_value=[0.0])
+def test_node_replacement_analyze_defined_nodes():
     # given
     chain, train_data, test_data, node_index = given_data()
 
@@ -185,8 +194,8 @@ def test_node_replacement_analyze_defined_nodes(mock):
     assert isinstance(node_analysis_result, list)
 
 
-@patch('fedot.sensitivity.sensitivity_facade.NodeReplaceModelAnalyze.analyze', return_value=[0.0, 0.0, 0.0])
-def test_node_replacement_analyze_random_nodes_default_number(mock):
+# @patch('fedot.sensitivity.sensitivity_facade.NodeReplaceModelAnalyze.analyze', return_value=[0.0, 0.0, 0.0])
+def test_node_replacement_analyze_random_nodes_default_number():
     # given
     chain, train_data, test_data, node_index = given_data()
 

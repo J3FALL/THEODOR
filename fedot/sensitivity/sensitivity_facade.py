@@ -76,15 +76,19 @@ class NodeDeletionAnalyze(NodeAnalyzeApproach):
         super(NodeDeletionAnalyze, self).__init__(chain, train_data, test_data)
 
     def analyze(self, node_id: int) -> Union[List[float], float]:
-        shortend_chain = self.sample(node_id)
-        loss = self._compare_with_origin_by_metric(shortend_chain)
+        if node_id == 0:
+            # TODO or warning?
+            return 0.0
+        else:
+            shortend_chain = self.sample(node_id)
+            loss = self._compare_with_origin_by_metric(shortend_chain)
 
-        return loss
+            return loss
 
     def sample(self, node_id: int):
         chain_sample = deepcopy(self._chain)
         node_to_delete = chain_sample.nodes[node_id]
-        chain_sample.delete_node_with_subtree(node_to_delete)
+        chain_sample.delete_node_with_redirection(node_to_delete)
 
         return chain_sample
 

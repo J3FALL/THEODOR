@@ -293,7 +293,7 @@ def test_delete_node_with_subtree():
     chain = Chain()
     chain.add_node(final)
 
-    chain.delete_node_with_subtree(third)
+    chain.delete_node_with_redirection(third)
 
     assert len(chain.nodes) == 3
     assert first in chain.root_node.nodes_from
