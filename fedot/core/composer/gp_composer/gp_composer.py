@@ -125,7 +125,6 @@ class GPComposer(Composer):
 
     def composer_metric(self, metrics, train_data: InputData, test_data: InputData,
                         is_chain_shared: bool, chain: Chain) -> Optional[Tuple[Any]]:
-
         try:
             validate(chain)
             if type(metrics) is not list:
@@ -150,7 +149,6 @@ class GPComposer(Composer):
         except Exception as ex:
             self.log.info(f'Chain assessment warning: {ex}. Continue.')
             evaluated_metrics = None
-
         return evaluated_metrics
 
     @staticmethod

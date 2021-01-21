@@ -11,6 +11,8 @@ from fedot.core.composer.optimisers.crossover import CrossoverTypesEnum, crossov
 from fedot.core.composer.optimisers.gp_operators import random_chain, num_of_parents_in_crossover, \
     evaluate_individuals, calculate_objective
 from fedot.core.composer.optimisers.inheritance import GeneticSchemeTypesEnum, inheritance
+from fedot.core.composer.optimisers.gp_operators import is_equal_archive, is_equal_fitness, \
+    duplicates_filtration
 from fedot.core.composer.optimisers.mutation import MutationTypesEnum, mutation
 from fedot.core.composer.optimisers.regularization import RegularizationTypesEnum, regularized_population
 from fedot.core.composer.optimisers.selection import SelectionTypesEnum, selection
@@ -155,6 +157,11 @@ class GPChainOptimiser:
                                                                objective_function=objective_function,
                                                                chain_class=self.chain_class)
 
+                if self.parameters.multi_objective:
+                    filtered_archive_items = duplicates_filtration(archive=self.archive,
+                                                                   population=individuals_to_select)
+                    individuals_to_select = deepcopy(individuals_to_select) + filtered_archive_items
+
                 num_of_parents = num_of_parents_in_crossover(num_of_new_individuals)
 
                 selected_individuals = selection(types=self.parameters.selection_types,
@@ -218,9 +225,9 @@ class GPChainOptimiser:
         value = 0
         if self.generation_num != 0:
             if self.parameters.multi_objective:
-                equal_best = self.is_equal_archive(self.prev_best, self.archive)
+                equal_best = is_equal_archive(self.prev_best, self.archive)
             else:
-                equal_best = self.is_equal_fitness(self.prev_best.fitness, self.best_individual.fitness)
+                equal_best = is_equal_fitness(self.prev_best.fitness, self.best_individual.fitness)
             if equal_best:
                 value = self.num_of_gens_without_improvements + 1
 
@@ -255,7 +262,7 @@ class GPChainOptimiser:
         sort_inds = np.argsort([ind.fitness for ind in individuals])[1:]
         simpler_equivalents = {}
         for i in sort_inds:
-            is_fitness_equals_to_best = self.is_equal_fitness(best_ind.fitness, individuals[i].fitness)
+            is_fitness_equals_to_best = is_equal_fitness(best_ind.fitness, individuals[i].fitness)
             has_less_num_of_models_than_best = len(individuals[i].nodes) < len(best_ind.nodes)
             if is_fitness_equals_to_best and has_less_num_of_models_than_best:
                 simpler_equivalents[i] = len(individuals[i].nodes)
@@ -308,23 +315,6 @@ class GPChainOptimiser:
         else:
             num_of_new_individuals = self.requirements.pop_size - 1
         return num_of_new_individuals
-
-    def is_equal_fitness(self, first_fitness, second_fitness, atol=1e-10, rtol=1e-10):
-        return np.isclose(first_fitness, second_fitness, atol=atol, rtol=rtol)
-
-    def is_equal_archive(self, old_archive: Any, new_archive: Any) -> bool:
-        if len(old_archive.items) != len(new_archive.items):
-            fronts_coincidence = False
-        else:
-            are_inds_found = []
-            for ind in new_archive:
-                eq_inds = list(filter(lambda item: all(
-                    [self.is_equal_fitness(obj, ind.fitness.values[obj_num]) for obj_num, obj in
-                     enumerate(item.fitness.values)]), old_archive.items))
-                are_inds_found.append(len(eq_inds) > 0)
-            fronts_coincidence = all(are_inds_found)
-
-        return fronts_coincidence
 
     def result_individual(self) -> Any:
         if not self.parameters.multi_objective:

@@ -207,14 +207,16 @@ class ComposerVisualiser:
         return objectives_values_set
 
     @staticmethod
-    def objectives_transform(individuals: List[List[Any]], objectives_numbers: Tuple[int] = None):
+    def objectives_transform(individuals: List[List[Any]], objectives_numbers: Tuple[int] = None,
+                             transform_from_minimization=True):
         objectives_numbers = [i for i in range(
             len(individuals[0][0].fitness.values))] if not objectives_numbers else objectives_numbers
         all_inds = list(itertools.chain(*individuals))
         all_objectives = [[ind.fitness.values[i] for ind in all_inds] for i in objectives_numbers]
-        all_objectives = list(
-            map(lambda obj_values: obj_values if obj_values[0] > 0 else list(np.array(obj_values) * (-1)),
-                all_objectives))
+        if transform_from_minimization:
+            all_objectives = list(
+                map(lambda obj_values: obj_values if obj_values[0] > 0 else list(np.array(obj_values) * (-1)),
+                    all_objectives))
         return all_objectives
 
     @staticmethod
@@ -333,6 +335,7 @@ class ComposerVisualiser:
         ComposerVisualiser.create_gif_using_images(gif_path=f'{folder}/pareto_history.gif', files=files)
         for file in files:
             remove(file)
+
 
 def colors_by_node_labels(node_labels: dict):
     colors = [color for color in range(len(node_labels.keys()))]

@@ -1,5 +1,5 @@
 #    This code is modified part of DEAP library (Library URL: https://github.com/DEAP/deap).
-
+import numpy as np
 import sys
 
 try:
@@ -108,7 +108,8 @@ class MultiObjFitness(object):
         return self.wvalues < other.wvalues
 
     def __eq__(self, other):
-        return self.wvalues == other.wvalues
+        is_eq = all([np.isclose(val, other.wvalues[i], atol=1e-10, rtol=1e-10) for i, val in enumerate(self.wvalues)])
+        return is_eq
 
     def __ne__(self, other):
         return not self.__eq__(other)

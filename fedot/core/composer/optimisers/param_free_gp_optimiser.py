@@ -3,6 +3,7 @@ from deap import tools
 import numpy as np
 from typing import (Optional, List, Any, Tuple)
 from fedot.core.composer.optimisers.inheritance import GeneticSchemeTypesEnum, inheritance
+from fedot.core.composer.optimisers.gp_operators import is_equal_archive, duplicates_filtration
 from fedot.core.composer.optimisers.regularization import regularized_population
 from fedot.core.composer.optimisers.selection import selection
 from fedot.core.composer.optimisers.gp_optimiser import GPChainOptimiserParameters, GPChainOptimiser
@@ -87,6 +88,11 @@ class GPChainParameterFreeOptimiser(GPChainOptimiser):
                                                                objective_function=objective_function,
                                                                chain_class=self.chain_class)
 
+                if self.parameters.multi_objective:
+                    filtered_archive_items = duplicates_filtration(archive=self.archive,
+                                                                   population=individuals_to_select)
+                    individuals_to_select = deepcopy(individuals_to_select) + filtered_archive_items
+
                 if num_of_new_individuals == 1 and len(self.population) == 1:
                     new_population = list(self.reproduce(self.population[0]))
                     evaluate_individuals(new_population, objective_function, self.parameters.multi_objective)
@@ -136,7 +142,10 @@ class GPChainParameterFreeOptimiser(GPChainOptimiser):
 
     @property
     def with_elitism(self) -> bool:
-        return self.requirements.pop_size >= 10
+        if self.parameters.multi_objective:
+            return False
+        else:
+            return self.requirements.pop_size >= 7
 
     @property
     def current_std(self):
@@ -167,7 +176,7 @@ class GPChainParameterFreeOptimiser(GPChainOptimiser):
             fitness_improved = False
             offspring_archive = tools.ParetoFront()
             offspring_archive.update(offspring)
-            is_archive_improved = not self.is_equal_archive(self.archive, offspring_archive)
+            is_archive_improved = not is_equal_archive(self.archive, offspring_archive)
             if is_archive_improved:
                 best_metric_in_prev = max(self.archive.items, key=lambda x: x.fitness.values[0]).fitness.values
                 best_metric_in_current = max(offspring_archive.items, key=lambda x: x.fitness.values[0]).fitness.values

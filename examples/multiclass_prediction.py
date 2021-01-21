@@ -13,7 +13,7 @@ from fedot.core.composer.visualisation import ComposerVisualiser
 from fedot.core.data.data import InputData
 from fedot.core.repository.model_types_repository import ModelTypesRepository
 from fedot.core.repository.quality_metrics_repository import \
-    ClassificationMetricsEnum, MetricsRepository
+    ClassificationMetricsEnum
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 from fedot.core.utils import probs_to_labels
 
