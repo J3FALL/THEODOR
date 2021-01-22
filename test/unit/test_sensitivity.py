@@ -152,12 +152,12 @@ def test_node_deletion_analyze():
 
 def test_node_deletion_analyze_zero_node_id():
     # given
-    chain, train_data, test_data, node_index = given_data()
+    chain, train_data, test_data, _ = given_data()
 
     # when
     node_analysis_result = NodeDeletionAnalyze(chain=chain,
                                                train_data=train_data,
-                                               test_data=test_data).analyze(node_id=node_index)
+                                               test_data=test_data).analyze(node_id=0)
 
     # then
     assert isinstance(node_analysis_result, float)
