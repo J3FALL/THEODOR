@@ -182,7 +182,7 @@ class GPChainParameterFreeOptimiser(GPChainOptimiser):
                 best_metric_in_current = max(offspring_archive.items, key=lambda x: x.fitness.values[0]).fitness.values
                 fitness_improved = best_metric_in_current[0] < best_metric_in_prev[0]
                 better_complexity_in_current = list(filter(lambda x: x.fitness.values[0] <= best_metric_in_prev[0] and
-                                                           x.fitness.values[1] < best_metric_in_prev[1],
+                                                                     x.fitness.values[1] < best_metric_in_prev[1],
                                                            offspring_archive.items))
                 complexity_decreased = False
                 if better_complexity_in_current:
@@ -213,7 +213,7 @@ class GPChainParameterFreeOptimiser(GPChainOptimiser):
 
     def operators_prob_update(self, std: float, max_std: float) -> Tuple[float, float]:
         mutation_prob = 1 - (std / max_std) if max_std > 0 and std != max_std else 0.5
-        crossover_prob = self.requirements.crossover_prob = 1 - self.requirements.mutation_prob
+        crossover_prob = 1 - mutation_prob
         return mutation_prob, crossover_prob
 
     def offspring_size(self, offspring_rate: float = None) -> int:
