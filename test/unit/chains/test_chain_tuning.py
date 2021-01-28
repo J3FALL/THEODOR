@@ -195,7 +195,7 @@ def test_tune_root_with_tune_class_correctly(data_fixture, request):
 
 
 @pytest.mark.parametrize('data_fixture', ['classification_dataset'])
-def test_tune_certain_node_with_tune_class_correctly(data_fixture, request):
+def test_tune_certain_secondary_node_with_tune_class_correctly(data_fixture, request):
     data = request.getfixturevalue(data_fixture)
     train_data, test_data = train_test_data_setup(data=data)
 
@@ -206,6 +206,38 @@ def test_tune_certain_node_with_tune_class_correctly(data_fixture, request):
     model_id_to_tune = 4
 
     tuned_chain = Tune(chain).fine_tune_certain_node(model_id=model_id_to_tune,
+                                                     input_data=train_data,
+                                                     max_lead_time=timedelta(minutes=1),
+                                                     iterations=30)
+
+    tuned_chain.fit_from_scratch(train_data)
+    after_tun_root_node_predicted = tuned_chain.predict(test_data)
+
+    bfr_tun_roc_auc = round(roc(y_true=test_data.target, y_score=before_tuning_predicted.predict), 1)
+    aft_tun_roc_auc = round(roc(y_true=test_data.target, y_score=after_tun_root_node_predicted.predict), 1)
+
+    print(f'Before tune test {bfr_tun_roc_auc}')
+    print(f'After tune test {aft_tun_roc_auc}', '\n')
+
+    assert aft_tun_roc_auc >= bfr_tun_roc_auc
+
+
+@pytest.mark.parametrize('data_fixture', ['classification_dataset'])
+def test_tune_certain_primary_node_with_tune_class_correctly(data_fixture, request):
+    data = request.getfixturevalue(data_fixture)
+    train_data, test_data = train_test_data_setup(data=data)
+
+    first = PrimaryNode('logit')
+    second = PrimaryNode('knn')
+    final = SecondaryNode('xgboost', nodes_from=[first, second])
+
+    chain = Chain()
+    chain.add_node(final)
+
+    chain.fit(train_data, use_cache=False)
+    before_tuning_predicted = chain.predict(test_data)
+
+    tuned_chain = Tune(chain).fine_tune_certain_node(model_id=1,
                                                      input_data=train_data,
                                                      max_lead_time=timedelta(minutes=1),
                                                      iterations=30)

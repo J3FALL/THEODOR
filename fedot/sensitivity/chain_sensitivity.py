@@ -2,7 +2,7 @@ from typing import List, Optional, Type
 
 from fedot.core.chains.chain import Chain
 from fedot.core.data.data import InputData
-from fedot.sensitivity.sensitivity_facade import NodeAnalyzeApproach, \
+from fedot.sensitivity.node_sensitivity import NodeAnalyzeApproach, \
     NodeAnalysis
 
 
@@ -41,27 +41,3 @@ class ChainStructureAnalyze:
             nodes_results[f'id = {index}, model = {self.chain.nodes[index].model.model_type}'] = node_result
 
         return nodes_results
-
-    # TODO replace metrics
-    # def variance_indices(self, model_responses):
-    #     self.chain.fit(self.train_data)
-    #     true_output = self.chain.predict(self.test_data)
-    #     true_variance = np.var(true_output.predict)
-    #     indices = []
-    #     for response in model_responses:
-    #         indices.append(np.var(np.array(response)) / true_variance)
-    #
-    #     return indices
-    #
-    # def roc_auc_indices(self, model_responses):
-    #     self.chain.fit(self.train_data)
-    #     predicted_originally = self.chain.predict(self.test_data)
-    #     original_roc_auc = roc_auc(y_true=self.test_data.target, y_score=predicted_originally.predict)
-    #     indices = []
-    #     indices_loss = []
-    #     for response in model_responses:
-    #         current_roc_auc = roc_auc(y_true=self.test_data.target, y_score=response)
-    #         indices.append(current_roc_auc)
-    #         indices_loss.append(original_roc_auc - current_roc_auc)
-    #
-    #     return indices, indices_loss

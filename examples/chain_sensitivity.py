@@ -9,6 +9,7 @@ from fedot.core.data.data import InputData
 from fedot.core.repository.tasks import Task, TaskTypesEnum
 from fedot.core.utils import project_root, default_fedot_data_dir
 from fedot.sensitivity.chain_sensitivity import ChainStructureAnalyze
+from fedot.sensitivity.model_sensitivity import ModelAnalyze
 
 
 def get_three_depth_chain():
@@ -39,7 +40,8 @@ def run_analysis_case(train_file_path, test_file_path):
     original_metric = - round(roc_auc(test_data.target, predicted_data.predict), 3)
 
     chain_analysis_result = ChainStructureAnalyze(chain=chain, train_data=train_data,
-                                                  test_data=test_data, nodes_ids_to_analyze=[1, 3]).analyze()
+                                                  test_data=test_data, nodes_ids_to_analyze=[3, 5],
+                                                  approaches=[ModelAnalyze]).analyze()
 
     print(f'chain analysis result {chain_analysis_result}')
 

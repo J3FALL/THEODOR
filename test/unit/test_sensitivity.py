@@ -6,7 +6,7 @@ from cases.data.data_utils import get_scoring_case_data_paths
 from fedot.core.chains.node import SecondaryNode
 from fedot.core.data.data import InputData
 from fedot.sensitivity.chain_sensitivity import ChainStructureAnalyze
-from fedot.sensitivity.sensitivity_facade import \
+from fedot.sensitivity.node_sensitivity import \
     NodeDeletionAnalyze, NodeAnalysis, NodeTuneAnalyze, NodeReplaceModelAnalyze
 from test.unit.utilities.test_chain_import_export import create_four_depth_chain
 
@@ -62,7 +62,7 @@ def test_chain_structure_analyze_init_raise_exception():
                              "all_nodes and nodes_ids_to_analyze"
 
 
-@patch('fedot.sensitivity.chain_sensitivity.ChainStructureAnalyze.analyze', return_value={'key': 'value'})
+# @patch('fedot.sensitivity.chain_sensitivity.ChainStructureAnalyze.analyze', return_value={'key': 'value'})
 def test_chain_structure_analyze_analyze_all_nodes(mock):
     # given
     chain, train_data, test_data, _ = given_data()
@@ -78,7 +78,7 @@ def test_chain_structure_analyze_analyze_all_nodes(mock):
     assert isinstance(result, dict)
 
 
-@patch('fedot.sensitivity.chain_sensitivity.ChainStructureAnalyze.analyze', return_value={'key': 'value'})
+# @patch('fedot.sensitivity.chain_sensitivity.ChainStructureAnalyze.analyze', return_value={'key': 'value'})
 def test_chain_structure_analyze_analyze_certain_nodes(mock):
     # given
     chain, train_data, test_data, _ = given_data()
@@ -164,7 +164,6 @@ def test_node_deletion_analyze_zero_node_id():
     assert node_analysis_result == 0.0
 
 
-# @patch('fedot.sensitivity.sensitivity_facade.NodeTuneAnalyze.analyze', return_value=0.0)
 def test_node_tune_analyze():
     # given
     chain, train_data, test_data, node_index = given_data()
@@ -188,9 +187,8 @@ def test_node_replacement_analyze_defined_nodes():
     node_analysis_result = \
         NodeReplaceModelAnalyze(chain=chain,
                                 train_data=train_data,
-                                test_data=test_data). \
-            analyze(node_id=node_index,
-                    nodes_to_replace_to=[replacing_node])
+                                test_data=test_data).analyze(node_id=node_index,
+                                                             nodes_to_replace_to=[replacing_node])
 
     # then
     assert isinstance(node_analysis_result, list)

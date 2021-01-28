@@ -37,6 +37,7 @@ class NodeAnalyzeApproach(ABC):
         self._chain = chain
         self._train_data = train_data
         self._test_data = test_data
+        self.metric = MetricByTask(self._train_data.task.task_type)
 
     @abstractmethod
     def analyze(self, node_id) -> Union[List[dict], float]:
@@ -45,28 +46,22 @@ class NodeAnalyzeApproach(ABC):
         pass
 
     @abstractmethod
-    def sample(self, *args) -> Union[List[Chain], Chain]:
+    def sample(self, *args) -> Union[Union[List[Chain], Chain], List[dict]]:
         """Changes the chain according to the approach"""
         pass
 
-    def _compare_with_origin_by_metric(self, changed_chain: Chain,
-                                       original_metric: Optional[float] = None,
-                                       metric_by_task: Optional[MetricByTask] = None) -> float:
-        if not metric_by_task:
-            metric_by_task = MetricByTask(self._train_data.task.task_type)
+    def _compare_with_origin_by_metric(self, changed_chain: Chain) -> float:
+        original_metric = self._get_metric_value(chain=self._chain)
 
-        if not original_metric:
-            original_metric = self._get_metric_value(chain=self._chain, metric=metric_by_task)
-
-        changed_chain_metric = self._get_metric_value(chain=changed_chain, metric=metric_by_task)
+        changed_chain_metric = self._get_metric_value(chain=changed_chain)
 
         return changed_chain_metric - original_metric
 
-    def _get_metric_value(self, chain: Chain, metric: MetricByTask) -> float:
+    def _get_metric_value(self, chain: Chain) -> float:
         chain.fit(self._train_data, use_cache=False)
         predicted = chain.predict(self._test_data)
-        metric_value = metric.get_value(true=self._test_data,
-                                        predicted=predicted)
+        metric_value = self.metric.get_value(true=self._test_data,
+                                             predicted=predicted)
 
         return metric_value
 
@@ -123,19 +118,15 @@ class NodeReplaceModelAnalyze(NodeAnalyzeApproach):
     def analyze(self, node_id: int,
                 nodes_to_replace_to: Optional[List[Node]] = None,
                 number_of_random_models: Optional[int] = 3) -> Union[List[dict], float]:
-        metric_by_task = MetricByTask(self._train_data.task.task_type)
+        # metric_by_task = MetricByTask(self._train_data.task.task_type)
 
         samples = self.sample(node_id=node_id,
                               nodes_to_replace_to=nodes_to_replace_to,
                               number_of_random_models=number_of_random_models)
 
-        original_metric = self._get_metric_value(chain=self._chain, metric=metric_by_task)
-
         loss = []
         for sample_chain in samples:
-            loss_per_sample = self._compare_with_origin_by_metric(sample_chain,
-                                                                  metric_by_task=metric_by_task,
-                                                                  original_metric=original_metric)
+            loss_per_sample = self._compare_with_origin_by_metric(sample_chain)
 
             new_node = sample_chain.nodes[node_id]
             loss.append({f'with {new_node.model.model_type} instead of {self._chain.nodes[node_id]}': loss_per_sample})

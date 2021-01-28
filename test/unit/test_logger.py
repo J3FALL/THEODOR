@@ -16,6 +16,14 @@ def get_config_file():
         return file
 
 
+@pytest.fixture()
+def get_bad_config_file():
+    test_file_path = str(os.path.dirname(__file__))
+    file = os.path.join(test_file_path, '../data', 'bad_log_config_file.yml')
+    if os.path.exists(file):
+        return file
+
+
 def release_log(logger, log_file):
     logger.release_handlers()
     if os.path.exists(log_file):
@@ -79,3 +87,29 @@ def test_logger_manager_keeps_loggers_correctly():
     actual_number_of_loggers = LogManager().debug['loggers_number']
 
     assert actual_number_of_loggers == expected_number_of_loggers
+
+
+@pytest.mark.parametrize('data_fixture', ['get_bad_config_file'])
+def test_logger_from_config_file_raise_exception(data_fixture, request):
+    test_bad_config_file = request.getfixturevalue(data_fixture)
+
+    with pytest.raises(Exception) as exc:
+        assert Log('test_logger', config_json_file=test_bad_config_file)
+
+    assert 'Can not open the log config file because of' in str(exc.value)
+
+
+def test_logger_str():
+    test_default_log = default_log('default_test_logger_for_str')
+
+    expected_str_value = "Log object for default_test_logger_for_str module"
+
+    assert str(test_default_log) == expected_str_value
+
+
+def test_logger_repr():
+    test_default_log = default_log('default_test_logger_for_repr')
+
+    expected_repr_value = "Log object for default_test_logger_for_repr module"
+
+    assert repr(test_default_log) == expected_repr_value
