@@ -63,7 +63,7 @@ def test_chain_structure_analyze_init_raise_exception():
 
 
 # @patch('fedot.sensitivity.chain_sensitivity.ChainStructureAnalyze.analyze', return_value={'key': 'value'})
-def test_chain_structure_analyze_analyze_all_nodes(mock):
+def test_chain_structure_analyze_analyze_all_nodes():
     # given
     chain, train_data, test_data, _ = given_data()
     approaches = [NodeDeletionAnalyze]
@@ -79,7 +79,7 @@ def test_chain_structure_analyze_analyze_all_nodes(mock):
 
 
 # @patch('fedot.sensitivity.chain_sensitivity.ChainStructureAnalyze.analyze', return_value={'key': 'value'})
-def test_chain_structure_analyze_analyze_certain_nodes(mock):
+def test_chain_structure_analyze_analyze_certain_nodes():
     # given
     chain, train_data, test_data, _ = given_data()
     approaches = [NodeDeletionAnalyze]
