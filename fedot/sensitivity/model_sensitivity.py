@@ -10,12 +10,12 @@ from SALib.sample import saltelli
 from SALib.sample.latin import sample as lhc_sample
 from SALib.sample.morris import sample as morris_sample
 from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import normalize
 
 from fedot.core.chains.chain import Chain
 from fedot.core.data.data import InputData
 from fedot.core.utils import default_fedot_data_dir
 from fedot.sensitivity.node_sensitivity import NodeAnalyzeApproach
+from fedot.core.models.model_template import extract_model_params
 
 
 class ModelAnalyze(NodeAnalyzeApproach):
@@ -30,7 +30,7 @@ class ModelAnalyze(NodeAnalyzeApproach):
     def analyze(self, node_id: int,
                 sa_method: str = 'sobol',
                 sample_method: str = 'saltelli',
-                sample_size: int = 100,
+                sample_size: int = 10,
                 is_oat: bool = True) -> Union[List[dict], float]:
 
         # check whether the chain is fitted
@@ -53,38 +53,52 @@ class ModelAnalyze(NodeAnalyzeApproach):
                                                             si=indices)
 
         if is_oat:
-            self._one_at_a_time_analyze(node_id=node_id)
+            self._one_at_a_time_analyze(node_id=node_id,
+                                        sample_size=sample_size)
 
         return [converted_to_json_indices]
 
     def sample(self, *args) -> Union[Union[List[Chain], Chain], List[dict]]:
-        problem_samples = self.sample_method(self.problem, num_of_samples=2)
+        sample_size = args[0]
+        problem_samples = self.sample_method(self.problem, num_of_samples=sample_size)
         problem_samples = clean_sample_variables(problem_samples)
 
         return problem_samples
 
     def get_model_response_matrix(self, samples, node_id: int):
         model_response_matrix = []
-        original_predict = self._chain.predict(self._test_data)
         for sample in samples:
             chain = deepcopy(self._chain)
             chain.nodes[node_id].custom_params = sample
 
             chain.fit(self._train_data)
             prediction = chain.predict(self._test_data)
-            model_response_matrix.append(mean_squared_error(y_true=original_predict.predict,
+            model_response_matrix.append(mean_squared_error(y_true=self._test_data.target,
                                                             y_pred=prediction.predict))
 
         return np.array(model_response_matrix)
 
     def worker(self, mng_dictionary, param: dict, node_id, sample_size: int = 100):
+        # sample
         problem = _create_problem_for_sobol_method(param)
+        # TODO extract hardcode sample method
         samples, converted_samples = make_latin_hypercube_sample(problem, sample_size)
         cleaned_samples = clean_sample_variables(converted_samples)
+
+        # default values of param & loss
+        param_name = list(param.keys())[0]
+        default_param_value = extract_model_params(self._chain.nodes[node_id]).get(param_name)
+        original_predict = self._chain.predict(self._test_data)
+        loss_on_default = mean_squared_error(y_true=self._test_data.target,
+                                             y_pred=original_predict.predict)
+
+        # percentage ratio
+        samples = samples.reshape(1, -1)[0]
+        samples = (samples - default_param_value) / default_param_value - 100
         response_matrix = self.get_model_response_matrix(cleaned_samples, node_id)
-        samples = normalize(samples)
-        response_matrix = normalize(response_matrix.reshape(1, -1))
-        mng_dictionary[f'{list(param.keys())[0]}'] = [samples.reshape(1, -1)[0], response_matrix]
+        response_matrix = (response_matrix - loss_on_default) / loss_on_default - 100
+
+        mng_dictionary[f'{param_name}'] = [samples.reshape(1, -1)[0], response_matrix]
 
     def visualize(self, data: dict):
         x_ticks = list()
@@ -100,7 +114,7 @@ class ModelAnalyze(NodeAnalyzeApproach):
 
         plt.savefig(join(default_fedot_data_dir(), f'{self.model_type}_sa.jpg'))
 
-    def _one_at_a_time_analyze(self, node_id, sample_size=10):
+    def _one_at_a_time_analyze(self, node_id, sample_size=2):
         manager = Manager()
         manager_dict = manager.dict()
         one_at_a_time_params = [{key: value} for key, value in self.model_params.items()]

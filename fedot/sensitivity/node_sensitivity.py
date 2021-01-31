@@ -37,7 +37,6 @@ class NodeAnalyzeApproach(ABC):
         self._chain = chain
         self._train_data = train_data
         self._test_data = test_data
-        self.metric = MetricByTask(self._train_data.task.task_type)
 
     @abstractmethod
     def analyze(self, node_id) -> Union[List[dict], float]:
@@ -51,17 +50,19 @@ class NodeAnalyzeApproach(ABC):
         pass
 
     def _compare_with_origin_by_metric(self, changed_chain: Chain) -> float:
-        original_metric = self._get_metric_value(chain=self._chain)
+        metric = MetricByTask(self._train_data.task.task_type)
 
-        changed_chain_metric = self._get_metric_value(chain=changed_chain)
+        original_metric = self._get_metric_value(chain=self._chain, metric=metric)
+
+        changed_chain_metric = self._get_metric_value(chain=changed_chain, metric=metric)
 
         return changed_chain_metric - original_metric
 
-    def _get_metric_value(self, chain: Chain) -> float:
+    def _get_metric_value(self, chain: Chain, metric: MetricByTask) -> float:
         chain.fit(self._train_data, use_cache=False)
         predicted = chain.predict(self._test_data)
-        metric_value = self.metric.get_value(true=self._test_data,
-                                             predicted=predicted)
+        metric_value = metric.get_value(true=self._test_data,
+                                        predicted=predicted)
 
         return metric_value
 

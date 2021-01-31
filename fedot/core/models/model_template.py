@@ -89,7 +89,7 @@ class ModelTemplate(ModelTemplateAbstract):
     def _create_full_params(self, node: Node) -> dict:
         params = {}
         if _is_node_fitted(node) and not _is_node_not_cached(node):
-            params = _extract_model_params(node)
+            params = extract_model_params(node)
             if isinstance(self.custom_params, dict):
                 for key, value in self.custom_params.items():
                     params[key] = value
@@ -151,7 +151,7 @@ def _check_existing_path(path: str):
         os.makedirs(path)
 
 
-def _extract_model_params(node: Node):
+def extract_model_params(node: Node):
     return node.cache.actual_cached_state.model.get_params()
 
 
