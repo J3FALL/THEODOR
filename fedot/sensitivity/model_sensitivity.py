@@ -49,7 +49,7 @@ class ModelAnalyze(NodeAnalyzeApproach):
         self.model_params = model_params_with_bounds_by_model_name.get(self.model_type)
         self.problem = _create_problem_for_sobol_method(self.model_params)
 
-        samples: List[dict] = self.sample()
+        samples: List[dict] = self.sample(sample_size)
 
         response_matrix = self.get_model_response_matrix(samples, node_id)
         indices = self.analyze_method(self.problem, response_matrix)
@@ -98,25 +98,33 @@ class ModelAnalyze(NodeAnalyzeApproach):
 
         # percentage ratio
         samples = samples.reshape(1, -1)[0]
-        samples = (samples - default_param_value) / default_param_value - 100
+        samples = (samples - default_param_value) / default_param_value
         response_matrix = self.get_model_response_matrix(cleaned_samples, node_id)
-        response_matrix = (response_matrix - loss_on_default) / loss_on_default - 100
+        # response_matrix = (response_matrix - loss_on_default) / loss_on_default
+        response_matrix = (response_matrix - np.mean(response_matrix)) / (max(response_matrix) - min(response_matrix))
 
         ModelAnalyze.lock.acquire()
         self.manager_dict[f'{param_name}'] = [samples.reshape(1, -1)[0], response_matrix]
         ModelAnalyze.lock.release()
 
     def visualize(self, data: dict):
-        x_ticks = list()
+        x_ticks_param = list()
+        x_ticks_loss = list()
         for param in data.keys():
-            x_ticks.append(param)
-            x_ticks.append(f'{param}_loss')
-        new_data = []
+            x_ticks_param.append(param)
+            x_ticks_loss.append(f'{param}_loss')
+        param_values_data = []
+        losses_data = []
         for value in data.values():
-            new_data.extend(value)
-        fig, ax = plt.subplots(figsize=(20, 10))
-        ax.boxplot(new_data)
-        plt.xticks(range(1, len(x_ticks) + 1), x_ticks)
+            param_values_data.append(value[0])
+            losses_data.append(value[1])
+
+        fig, (ax1, ax2) = plt.subplots(2, figsize=(20, 10))
+        ax1.boxplot(param_values_data)
+        ax2.boxplot(losses_data)
+        ax1.set_title('param')
+        ax2.set_title('loss')
+        plt.xticks(range(1, len(x_ticks_param) + 1), x_ticks_param)
 
         plt.savefig(join(default_fedot_data_dir(), f'{self.model_type}_sa.jpg'))
 
