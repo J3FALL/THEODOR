@@ -21,3 +21,4 @@ joblib==0.17.0
 tensorflow==2.1.0; python_version <= '3.7'
 tensorflow==2.4.0; python_version == '3.8'
 nltk==3.5
+SALib==1.3.11

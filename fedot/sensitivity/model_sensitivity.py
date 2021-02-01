@@ -1,5 +1,6 @@
 from copy import deepcopy
-from multiprocessing import Process, Manager
+# from multiprocessing import Process, Manager
+from threading import Thread, Lock
 from os.path import join
 from typing import List, Union
 
@@ -19,6 +20,8 @@ from fedot.core.models.model_template import extract_model_params
 
 
 class ModelAnalyze(NodeAnalyzeApproach):
+    lock = Lock()
+
     def __init__(self, chain: Chain, train_data, test_data: InputData):
         super(ModelAnalyze, self).__init__(chain, train_data, test_data)
         self.model_params = None
@@ -26,6 +29,7 @@ class ModelAnalyze(NodeAnalyzeApproach):
         self.problem = None
         self.analyze_method = None
         self.sample_method = None
+        self.manager_dict = {}
 
     def analyze(self, node_id: int,
                 sa_method: str = 'sobol',
@@ -78,7 +82,7 @@ class ModelAnalyze(NodeAnalyzeApproach):
 
         return np.array(model_response_matrix)
 
-    def worker(self, mng_dictionary, param: dict, node_id, sample_size: int = 100):
+    def worker(self, param: dict, node_id, sample_size: int = 100):
         # sample
         problem = _create_problem_for_sobol_method(param)
         # TODO extract hardcode sample method
@@ -98,7 +102,9 @@ class ModelAnalyze(NodeAnalyzeApproach):
         response_matrix = self.get_model_response_matrix(cleaned_samples, node_id)
         response_matrix = (response_matrix - loss_on_default) / loss_on_default - 100
 
-        mng_dictionary[f'{param_name}'] = [samples.reshape(1, -1)[0], response_matrix]
+        ModelAnalyze.lock.acquire()
+        self.manager_dict[f'{param_name}'] = [samples.reshape(1, -1)[0], response_matrix]
+        ModelAnalyze.lock.release()
 
     def visualize(self, data: dict):
         x_ticks = list()
@@ -115,11 +121,9 @@ class ModelAnalyze(NodeAnalyzeApproach):
         plt.savefig(join(default_fedot_data_dir(), f'{self.model_type}_sa.jpg'))
 
     def _one_at_a_time_analyze(self, node_id, sample_size=2):
-        manager = Manager()
-        manager_dict = manager.dict()
         one_at_a_time_params = [{key: value} for key, value in self.model_params.items()]
-        jobs = [Process(target=self.worker,
-                        args=(manager_dict, param, node_id, sample_size)) for param in one_at_a_time_params]
+        jobs = [Thread(target=self.worker,
+                       args=(param, node_id, sample_size)) for param in one_at_a_time_params]
 
         for job in jobs:
             job.start()
@@ -127,10 +131,13 @@ class ModelAnalyze(NodeAnalyzeApproach):
         for job in jobs:
             job.join()
 
-        for key, value in manager_dict.items():
+        for param in one_at_a_time_params:
+            self.worker(param, node_id, sample_size)
+
+        for key, value in self.manager_dict.items():
             print(f'key = {key} : {value}')
 
-        self.visualize(data=manager_dict)
+        self.visualize(data=self.manager_dict)
 
 
 def sobol_method(problem, model_response) -> dict:
